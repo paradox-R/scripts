@@ -13,7 +13,7 @@
 
 options="--new-window"
 #url=$(dmenu -i -p "Which URL to Follow?" <&-)
-url=$(echo -e "DevDocs\nGitHub\nGoogle\nMangaPark\nReddit\nRegExr\nYouTube" | dmenu -i -l 5 -p "Which URL to Follow?")
+url=$(echo -e "DevDocs\nGitHub\nGoogle\nMangaPark\nReddit\nRegExr\nTwitter\nYouTube Login" | dmenu -i -l 5 -p "URL : ")
 
 case ${url} in
 	"DevDocs") url='https://devdocs.io'
@@ -30,7 +30,7 @@ case ${url} in
 		;;
 	"Twitter") url='https://twitter.com/login'
 		;;
-	"YouTube") url='https://youtube.com/signin'
+	"YouTube Login") url='https://youtube.com/signin'
 		;;
 esac
 
