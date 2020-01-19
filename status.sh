@@ -1,6 +1,6 @@
 #!/bin/sh
-# ______        ____  __   ____  _        _             
-#|  _ \ \      / /  \/  | / ___|| |_ __ _| |_ _   _ ___ 
+# ______        ____  __   ____  _        _
+#|  _ \ \      / /  \/  | / ___|| |_ __ _| |_ _   _ ___
 #| | | \ \ /\ / /| |\/| | \___ \| __/ _` | __| | | / __|
 #| |_| |\ V  V / | |  | |  ___) | || (_| | |_| |_| \__ \
 #|____/  \_/\_/  |_|  |_| |____/ \__\__,_|\__|\__,_|___/
@@ -33,19 +33,17 @@ calcSpeeds(){
 
 	vel=$(echo "scale=1;($val-$prevVal)/1024" | bc)
 	ivel=$(printf %.f $vel)
-	if [ $ivel -gt 1024 ]
-	then
+	if [ $ivel -gt 1024 ]; then
 		vel=$(echo "scale=1;$vel/1024" | bc)
 		echo $vel MB/s
 	else
-		echo $vel KB/s	
+		echo $vel KB/s
 	fi
 }
 
 #Connection Details
 getNetworkTraffic(){
-	if nmcli | grep 'connected to' > /dev/null
-	then
+	if nmcli | grep 'connected to' > /dev/null; then
 		#prevIn=$in
 		#prevOut=$out
 
@@ -54,20 +52,21 @@ getNetworkTraffic(){
 		#out=$(grep $interface /proc/net/dev | awk '{print $10}')
 		#inSpeed=$(calcSpeeds $in $prevIn)
 		#outSpeed=$(calcSpeeds $out $prevOut)
-		
-		if [ $interface="wlo1:" ]
-		then
+
+		if [ $interface="wlo1:" ]; then
 			cmd=$(nmcli device wifi list | awk '/^*/ {print "ssid="$3, "bars="$9}')
 			eval $cmd
-			echo Connected to : $ssid $bars #Up: $outSpeed Down: $inSpeed 
-		elif [ $interface="lo:" ]
-		then
+			#echo "Connection : $ssid $bars" #▲:$outSpeed ▼:$inSpeed
+			echo "Connection 🌐 : $ssid $bars" #▲:$outSpeed ▼:$inSpeed
+		elif [ $interface="lo:" ]; then
 			ssid=$(nmcli | awk '/connected/ {print $4 }')
-			echo Connected to : $ssid
-		fi	
+			#echo "Connection : $ssid"
+			echo "Connection 🌐 : $ssid"
+		fi
 	else
 		availConn=$(nmcli device wifi list | awk '$7 > 60' | wc -l)
-		echo Connection : [$(($availConn-1)) *]
+		#echo "Connection : [$(expr $availConn - 1) *]"
+		echo "Connection 🌐 : [$(expr $availConn - 1) *]"
 	fi
 }
 
@@ -75,22 +74,35 @@ getNetworkTraffic(){
 getBacklight(){
 	bcklit=$(xbacklight -get)
 	bcklit=${bcklit%.*}
-	echo Screen : $bcklit%
+	#echo "Screen : $bcklit%"
+	if [ $bcklit -le 50 ]; then
+		echo "Screen 💡 : $bcklit% 🔅"
+	else
+		echo "Screen 💡 : $bcklit% 🔆"
+	fi
 }
 
 #Volume Params
 getVol(){
-	if amixer get Master | grep '\[on\]' > /dev/null
-	then
-		echo Volume : $(amixer get Master | tail -n1 | sed -r 's/.*\[(.*)%\].*/\1/')%
+	if amixer get Master | grep '\[on\]' > /dev/null; then
+		#echo Volume : $(amixer get Master | tail -n1 | sed -r 's/.*\[(.*)%\].*/\1/')%
+		vl=$(amixer get Master | tail -n1 | sed -r 's/.*\[(.*)%\].*/\1/')
+		if [ $vl -gt 0 ] && [ $vl -le 33 ]; then
+			echo " Vol 🔈 : $vl% "
+		elif [ $vl -gt 33 ] && [ $vl -le 66 ]; then
+			echo " Vol 🔉 : $vl% "
+		else
+			echo " Vol 🔊 : $vl% "
+		fi
 	else
-		echo Volume : --
+		#echo Volume : --
+		echo " Vol : Mute 🔇 "
 	fi
 }
 
 #Local current time
 getTime(){
-	echo $(date +%B\ %d), $(date +%Y\ %T\ %Z)
+	echo "🗓  $(date +%B\ %d\,\ %Y\ \ \⌚\ %T\ %Z)"
 }
 
 #Get the current Memory stats
@@ -100,23 +112,24 @@ getMemStats(){
 
 #Battery Stats
 getBatStats(){
-	if acpi -b | grep Full > /dev/null
-	then
+	if acpi -b | grep Full > /dev/null; then
 		echo "Battery : 100%, ="
-	elif acpi -b | grep Charging > /dev/null
-	then
-		echo Battery : $(acpi -b | awk '{print $4 " + (" $5 ")"}')
-	elif acpi -b | grep Discharging > /dev/null
-	then
-		echo Battery : $(acpi -b  | awk '{print $4 " - (" $5 ")"}')	
+	elif acpi -b | grep Charging > /dev/null; then
+		#echo "Battery : $(acpi -b | awk '{print $4 " (" $5 ")"}')"
+		echo "Battery : $(acpi -b | awk '{print $4 " 🔌 (" $5 ")"}')"
+	elif acpi -b | grep Discharging > /dev/null; then
+		#echo "Battery : $(acpi -b  | awk '{print $4 " (" $5 ")"}')"
+		echo "Battery : $(acpi -b  | awk '{print $4 " 🔋 (" $5 ")"}')"
 	else
-		echo Battery : $(acpi -b |awk '{print $4 ", ?"}')
+		#echo "Battery : $(acpi -b |awk '{print $4 ", ?"}')"
+		echo "Battery : $(acpi -b |awk '{print $4 ", 🔋 ?"}')"
 	fi
 }
 
 #CPU Temp
 getTemp(){
-	echo Temp : $(sensors | awk '/^temp1/ {print $2 $3}')
+	#echo Temp : $(sensors | awk '/^temp1/ {print $2 $3}')
+	echo "Temp  🌡 : $(sensors | awk '/^temp1/ {print $2 $3}')"
 }
 
 #CPU Load Avg
@@ -130,8 +143,7 @@ getLoad(){
 #Weather Report
 oldMin=0
 getWeather(){
-	if $(ping -q -c 1 1.1.1.1 > /dev/null)
-	then
+	if $(ping -q -c 1 1.1.1.1 > /dev/null);	then
 		#wttr.in->>l=location, c=weather condition, C=wether condition text,
 		#t=Temp, w=wind dir and speed, m=moonphase, M=moonday, p=precipitation/
 		#location="Your,City"
@@ -145,8 +157,7 @@ getWeather(){
 while xsetroot -name "$(getTime) ; $weather | $(getNetworkTraffic) | $(getBacklight) | $(getVol) | $(getTemp) | $(getLoad) | $(getMemStats) | $(getBatStats)"
 do
 	now=$(date +%M)
-	if [ ! $oldMin -eq $now ] || $(echo $weather | grep Unavailable > /dev/null)
-	then
+	if [ ! $oldMin -eq $now ] || $(echo $weather | grep Unavailable > /dev/null); then
 		oldMin=$now
 		weather=$(getWeather)
 	fi

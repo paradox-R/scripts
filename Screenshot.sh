@@ -12,10 +12,10 @@
 #Dependencies -> scrot.
 
 filename="Screenshot_$(date +%Y%m%d_%H%M%S).png"
-Dest=~/Pictures/Screenshots
+Dest=$HOME/Pictures/Screenshots
 proc=/bin/scrot
-[ -e ~/Pictures ] || mkdir ~/Pictures
-[ -e ~/Pictures/Screenshots ] || mkdir ~/Pictures/Screenshots
+#[ -e ~/Pictures ] || mkdir ~/Pictures
+[ -e $HOME/Pictures/Screenshots ] || mkdir -p $HOME/Pictures/Screenshots
 [ $1 = "full" ] && options='-q 100' 
 [ $1 = "selective" ] && options='-s -q 100'
 $proc $options $filename && mv -f ./${filename} $Dest
