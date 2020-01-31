@@ -1,0 +1,109 @@
+
+ _     _                             
+| |   (_)_ __   ___  __ _  __ _  ___ 
+| |   | | '_ \ / _ \/ _` |/ _` |/ _ \
+| |___| | | | |  __/ (_| | (_| |  __/
+|_____|_|_| |_|\___|\__,_|\__, |\___|
+                          |___/      
+ ____        _ _     _ 
+| __ ) _   _(_) | __| |
+|  _ \| | | | | |/ _` |
+| |_) | |_| | | | (_| |
+|____/ \__,_|_|_|\__,_|
+ ____                              
+|  _ \ _ __ ___   ___ ___  ___ ___ 
+| |_) | '__/ _ \ / __/ _ \/ __/ __|
+|  __/| | | (_) | (_|  __/\__ \__ \
+|_|   |_|  \___/ \___\___||___/___/
+=============================================================
+
+1. Install the Android SDK
+	Download the latest SDK from Google and unzip it to home Directory as below.
+
+	$ unzip platform-tools-latest-linux.zip -d ~
+
+2. Add Platform Tools to $PATH. [Either in .xprofile/ .xprofile /.xinitrc]
+	Then either run source from the respective document to update the environment or restart session.
+
+3. Install Build Packages.
+	[run setup/[distroSpecidfic].sh from https://github.com/akhilnarang/scripts.]
+
+4. Create the directories, Install repo tool and add them to $PATH
+	$ mkdir -p ~/bin
+	$ mkdir -p ~/android/lineage
+
+	The 'bin' directory will contain the repo tool. Curl the tool and make it executable.
+	$ curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+	$ chmod a+x ~/bin/repo
+
+	Add the same bin directory to $PATH as above and update the Environment.
+
+5. Initialize the LineageOS source repository ensuring the branch name.
+	$ cd ~/android/lineage
+	$ repo init -u https://github.com/LineageOS/android.git -b lineage-17.0
+
+	To start first time download or to kepp the sources up-to-date, run :
+	$ repo sync
+	[default flags are -j 4 and -c, implying four threads/connections & current branch only repsectively]
+
+		OR
+	$ repo sync -d -c -q --jobs=8 --no-tags --force-sync
+
+6. Prepare device specific code.
+	From the  ~/android/lineage dir, run :
+	$ source build/envsetup.sh
+	$ breakfast [deviceName]
+
+	If breakfast fails, proceed to extract proprietary blobs and then re-run breakfast.
+
+7. Extract Proprietary Blobs.
+	- From a target device with ADB and root enabled, and running Lineage,
+		$ cd ~/android/lineage/device/specific/folder [.../device/xiaomi/tissot for tissot]
+		$ ./extract-files.sh
+			OR
+	- From an official Lineage Build (Installable zip) [from block-based OTA]
+		create a Temp Directory, 
+		$ mkdir ~/android/systemDump
+		$ cd ~/android/systemDump
+		$ unzip /path/to/lineage/zip 
+
+		Target devices of A/B partition type will have another compression of '*.bin' format.
+		This can be decompressed using 
+			https://github.com/cyxx/extract_android_ota_payload [based on python2 and protobuf2]
+			OR
+			https://github.com/vm03/payload_dumper 
+		Then mount the 'system.img' from the decompressed file, on a directory and from 
+		~/android/lineage/device/specific/folder,
+		$ ./extract-files.sh /path/to/mounted/system
+
+8. Turn on ccache to Speed up builds
+	export USE_CCACHE=1
+	export CCACHE_COMPRESS=1 [in any profiles or initrcs and initliaze the env]
+	Then,
+	$ ccache -M 25G
+
+9. Start the Build
+	$ croot
+	$ brunch [targetdevice]
+
+10. Install the Build
+	The $OUT directory will contain the 'recovery.img' and 'lineage.zip', which can then be used to 
+	flash the device.
+
+IMPORTANT : 
+	1. Make sure to determine if the proprietary blobs are block based or file based and proceed accordingly.
+	2. Upon unzipping a flashable zip if, 'system.transfer.list' exists then the OTA is file based.
+	3. If a '.br' [brotli archive is found], install brotli to decompress from the file using 
+		'brotli --decompress --output=system.new.dat system.new.dat.br'
+	4. THE BUILD PROCESS WORKS IN PYTHON2 ENVIRONMENT ONLY.
+		If you are on a more recent python then make sure to use appropriate Virtual Env.
+		And build lineage within virtual environment.
+	5. THE BUILD PROCESS WORKS IN BASH ENVIRONMENT ONLY.
+		bash is the default in most distros, however if using any other shell, 
+		make sure to switch to bash before starting the build process.
+		
+
+SUCCESS!! SO.. WHAT'S NEXT?
+
+You’ve done it! Welcome to the elite club of self-builders. You’ve built your operating system from scratch, 
+from the ground up. You are the master/mistress of your domain… and hopefully you’ve learned a bit on the way and had some fun too.

@@ -148,9 +148,14 @@ getWeather(){
 		#t=Temp, w=wind dir and speed, m=moonphase, M=moonday, p=precipitation/
 		#location="Your,City"
 		#report=$(curl wttr.in/$location\?format="%l:+%c+%C,+%t,+%w,+%m+%M")
-		curl wttr.in\?format="%l:+%c+%C,+%t,+%w,+%m+%M"
+		report=$(curl wttr.in\?format="%l:+%c+%C,+%t,+%w,+%m+%M")
+		if (echo $report | grep "html" > /dev/null); then
+			echo *Weather Report Unavailable*
+		else
+			echo $report
+		fi
 	else
-		echo *Weather Report Unavailable*
+		echo *Network Unavailable*
 	fi
 }
 

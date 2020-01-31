@@ -1,0 +1,175 @@
+
+    _             _       _     _                  
+   / \   _ __ ___| |__   | |   (_)_ __  _   ___  __
+  / _ \ | '__/ __| '_ \  | |   | | '_ \| | | \ \/ /
+ / ___ \| | | (__| | | | | |___| | | | | |_| |>  < 
+/_/   \_\_|  \___|_| |_| |_____|_|_| |_|\__,_/_/\_\
+                                                   
+ ___           _        _ _    _______ _____ ___            _             __  
+|_ _|_ __  ___| |_ __ _| | |  / / ____|  ___|_ _|  ___  ___| |_ _   _ _ __\ \ 
+ | || '_ \/ __| __/ _` | | | | ||  _| | |_   | |  / __|/ _ \ __| | | | '_ \| |
+ | || | | \__ \ || (_| | | | | || |___|  _|  | |  \__ \  __/ |_| |_| | |_) | |
+|___|_| |_|___/\__\__,_|_|_| | ||_____|_|   |___| |___/\___|\__|\__,_| .__/| |
+                              \_\                                    |_|  /_/ 
+==============================================================================
+Tools like lsblk, ping can be used to determince the status, name of storage block 
+and network connection respectively.
+
+1. Sync NetworkTime.
+	# timdatectl set-ntp true
+
+2. Partitioning the drives.
+	While multiple partitioning tools fdisk, cfdisk gdisk are available, gdisk 
+	is preferred.
+	# gdisk /disk/to/be/partitioned
+	Ops - o, n, w	
+	Preferred hexes -
+		EF00 - EFI system [system doesn't accept other setup under GPT label]
+		8200 - Linux Swap [If needed]
+		8300 - Linux System [home,root etc. partitions]
+
+3. Drive Encryption [if needed]
+	# cryptsetup -y -v luksformat /block/to/be/encrypted
+	Run the above command, choose and verify a password for the encryption.
+	
+	# cryptsetup open /encrypted/block [referenceName]
+	User will be prompted for password.
+
+	# pvcreate /dev/mapper/[referenceName]
+	Create a physical Volume spanning over the entire encrypted Volume.
+
+	# vgcreate [volGroupName] /dev/mapper/[referenceName]
+	Create a Volume Group that'll hold all the logical volumes to come.
+
+	# lvcreate -l [spaceTobeAllocated] [volGroupName] -n [volName]
+	# lvcreate -L [volGroupName] -n [volName]
+	lvcreate can be used as partitioning tool for an encrypted storage block.
+	-l flag, allocates the disk space to be used for the volume [%].
+	-L flag, allocates the disk space to be used for the volume [in M,G etc].
+	
+	# modprobe dm_mod	
+	# vgscan
+	# vgchange -ay
+
+4. Declaring the Filesystem to be used. 
+	# mkfs.vfat [/path/to/boot]
+	
+	# mkfs.[fsOfChoice] /partitionName 
+	partitionName can be that of an encrypted or regular block.
+
+	# mkswap /path/to/swap
+	# swapon /path/to/swap
+	Swap if needed.
+
+5. Mounting the device block on respective mount points for the installation.
+	# mount /path/to/root /mnt
+	# mkdir /mnt/home		[if home partition exists]
+	# mount /path/to/home /mnt/home	[if home partition exists]
+	# mkdir /mnt/boot
+	# mount /path/to/boot /mnt/boot
+
+6. Pacstrap on /mnt 
+	# pacstrap -i /mnt [base base-devel vim]
+
+7. Generate fstab and dump it to /etc/fstab
+	# genfstab -U /mnt >> /mnt/etc/fstab
+
+8. chroot into the pacstrapped mountpoint
+	# arch-chroot /mnt
+
+9. Installing certain required packages that are needed to run the system.
+	# pacman -S networkmanager, linux-header, linux-lts, linux-lts-headers, vim, git
+	lts kernel and its headers are optional.
+
+10. Enable the network manager service
+	# systemctl enable NetworkManager
+
+11. Adding hooks for encryption to be handles at startup
+	# vim /etc/mkinitcpio.conf
+	Add the hooks 'encrypt' and 'lvm2' between hooks 'block' and 'filesystems'.
+	A must for the system to look for storage blocks to be decrypted on startup, else 
+	the blocks won't be decrypted.
+	Save and Exit.
+
+12. Create init files against newly created hooks.
+	# mkinitcpio -p [kernelName]
+	The above command has to be run multiple times against all the installed kernels. 
+	[linux, linux-lts etc]
+
+13. Bootloader [user can choose between bootctl or grub]
+	-using BOOTCTL
+		# bootctl install
+		systemd's bootmanager
+		
+		# cd /boot/loaders
+		# vim loader.conf
+			timeout 5 [change the default delay value during boot (in secs)]
+			default arch
+		Save and Exit.
+		
+		# cd entries 
+		Each .conf file in the entries/ is considered an entry for bootloader.
+		There should be an entry for each kernal built and expected to be used 
+		for the system.
+
+		# vim arch.conf
+			title   [name]
+			linux   [kernalImageName]
+			initrd 	[initramfsImageName]
+			options root=UUID=[UUIDofRootBlock]
+					OR
+			options rw cryptdevice=UUID=[UUIDOfEncryptedBlock]:[volGroupName] root=UUID=[UUIDofRootBlock]
+		Save and Exit.
+		Fourth and fifth lines are not be used together but are rather for unencrypted 
+		and encrypted system respectively.
+
+	-using GRUB
+		# pacman -S grub
+		# grub-install --target=i386-pc /path/to/all/of/Storage
+		
+		If using an encrypted storage block, following steps need to be followed.
+		# vim /etc/default/grub
+			add 'cryptdevice=UUID=[UUIDofENcryptedBlock]:[volGroupName]' to 'grub_cmdline_linux_default' line.
+
+		# grub-mkconfig -O /boot/grub/grub.cfg
+
+14. Set the locale info.
+	# vim /etc/locale.gen
+	Uncomment the line corresponding to your locale, Save and exit.
+	
+	# locale-gen
+
+15. Set the localtime 
+	# ln -Sf /usr/share/zoneinfo/[region]/[city] /etc/localtime
+
+16. Set hostname if required.
+	# hostnamectl set-hostname [hostName]
+
+17. Setting password for the root and finishing the install.
+	# passwd
+	# exit 			->exits chroot
+	# umount -R /mnt
+	# reboot
+
+18. Post-Installation
+	# useradd -m -G wheel -S [defaultShell] [userName]
+	-m creates a home dir for the user being created, 
+	-G adds the user to wheel group, 
+	-S assigns a default shell if needed.
+
+	# passwd [userName]
+	Creating a password for the users added.
+	
+	pacman -S xorg xorg-utils xorg-xserver		->for WM
+			OR
+	pacman -S [desired DE groups]
+
+
+
+
+**IMPORTANT**-
+Troubleshooting
+
+1. # ln -s /etc/fonts/conf.avail/10-scale-bitmap-fonts.conf /etc/fonts/conf.d/
+	Certain bitmap fonts[ e.g. noto-fonts-emoji] in fontconfig don't rescale.
+	Might affect dunst and other applications, create the above link and restart the application.
