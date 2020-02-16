@@ -15,13 +15,15 @@
 #
 #Dependencies - dmenu[promptUser]
 
-prompt=$HOME/binaries/promptUser
+prompt=$HOME/bin/promptUser
 operation=$(echo -e "Logout"\
 		"\nReboot"\
 		"\nShutdown"\
 		"\nSuspend" | dmenu -i -l 5 -p "")
 
 [ -z $operation ] && exit
+
+operation=$(echo $operation | sed -E 's/$[ \t]*//g')
 case $operation in
 	"Logout") 
 		$prompt "Logout ⁉"
