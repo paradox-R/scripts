@@ -1,12 +1,12 @@
-#!/bin/sh
-# ____                                  
-#| __ ) _ __ _____      _____  ___ _ __ 
+#!/usr/bin/env sh
+# ____
+#| __ ) _ __ _____      _____  ___ _ __
 #|  _ \| '__/ _ \ \ /\ / / __|/ _ \ '__|
-#| |_) | | | (_) \ V  V /\__ \  __/ |   
-#|____/|_|  \___/ \_/\_/ |___/\___|_|   
+#| |_) | | | (_) \ V  V /\__ \  __/ |
+#|____/|_|  \___/ \_/\_/ |___/\___|_|
 #
 #Surfs the internet for a given text/ Query using the default search engine or
-#directly opens a provided URL. 
+#directly opens a provided URL.
 #To directly add Bookmarks, Just add the URLs below.
 #
 #Dependencies -> dmenu.
@@ -14,6 +14,7 @@
 options="--new-window"
 #url=$(dmenu -i -p "Which URL to Follow?" <&-)
 url=$(echo -e "                                        "\
+	"\nArchives"\
 	"\nDevDocs"\
 	"\nGitHub"\
 	"\nGoogle"\
@@ -23,7 +24,10 @@ url=$(echo -e "                                        "\
 	"\nTwitter"\
 	"\nYouTube" | dmenu -i -l 5 -p "URL : ")
 
+url=$(echo $url | sed -E 's/$[ \t]*//g')
 case ${url} in
+	"Archives") url='https://archive.org'
+		;;
 	"DevDocs") url='https://devdocs.io'
 		;;
 	"GitHub") url='https://github.com/login'
@@ -46,5 +50,6 @@ if [ -n "$url" ]
 then
 	[ ! $(echo $url | grep -E '\.com|\.org|\.net|\.in|\.io') > /dev/null ] && url=$(echo "https://duckduckgo.com/?q=${url}" | sed 's/ /+/g')
 	[ ! $(echo $url | grep -E 'https') > /dev/null ] && url=$(echo "https://${url}" | sed 's/ //g')
-	$BROWSER ${options} ${url} && exit 0
+	$BROWSER ${options} ${url}
 fi
+exit 0

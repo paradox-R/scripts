@@ -1,0 +1,38 @@
+#!/usr/bin/env sh
+#
+# _____      _ _   
+#| ____|_  _(_) |_ 
+#|  _| \ \/ / | __|
+#| |___ >  <| | |_ 
+#|_____/_/\_\_|\__|
+#                  
+#  ___                       _   _                 
+# / _ \ _ __   ___ _ __ __ _| |_(_) ___  _ __  ___ 
+#| | | | '_ \ / _ \ '__/ _` | __| |/ _ \| '_ \/ __|
+#| |_| | |_) |  __/ | | (_| | |_| | (_) | | | \__ \
+# \___/| .__/ \___|_|  \__,_|\__|_|\___/|_| |_|___/
+#      |_|                                         
+#
+#Dependencies - dmenu[promptUser]
+
+prompt=$HOME/binaries/promptUser
+operation=$(echo -e "Logout"\
+		"\nReboot"\
+		"\nShutdown"\
+		"\nSuspend" | dmenu -i -l 5 -p "")
+
+[ -z $operation ] && exit
+case $operation in
+	"Logout") 
+		$prompt "Logout ⁉"
+		[ $? -eq 0 ] && $(pkill -kill -u $USER);;
+	"Reboot") 
+		$prompt "Reboot System ⁉"
+		[ $? -eq 0 ] && $(reboot);;
+	"Shutdown")
+		$prompt "ShutDown Now ⁉"
+		[ $? -eq 0 ] && $(shutdown now);;
+	"Suspend")
+		$prompt "Suspend All Operations ⁉"
+		[ $? -eq 0 ] && $(systemctl suspend);;
+esac

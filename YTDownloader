@@ -1,0 +1,55 @@
+#!/usr/bin/env sh 
+#
+#__   __          _         _          
+#\ \ / /__  _   _| |_ _   _| |__   ___ 
+# \ V / _ \| | | | __| | | | '_ \ / _ \
+#  | | (_) | |_| | |_| |_| | |_) |  __/
+#  |_|\___/ \__,_|\__|\__,_|_.__/ \___|
+#                                      
+# ____                      _                 _           
+#|  _ \  _____      ___ __ | | ___   __ _  __| | ___ _ __ 
+#| | | |/ _ \ \ /\ / / '_ \| |/ _ \ / _` |/ _` |/ _ \ '__|
+#| |_| | (_) \ V  V /| | | | | (_) | (_| | (_| |  __/ |   
+#|____/ \___/ \_/\_/ |_| |_|_|\___/ \__,_|\__,_|\___|_|   
+# 
+#Dependencies - youtube-dl, dmenu[promptUser], notify-send
+
+ytDL=/usr/bin/youtube-dl
+notif=/usr/bin/notify-send
+prompt=$HOME/binaries/promptUser
+dest=$HOME/Media/YTDownloads
+url=$(xclip -selection primary -o)
+
+[ -z $url ] && $notif "No Download URL Found" -u "normal" -t 3000 -a "⬇ Downloader" && exit 
+[ ! $(echo $url | grep -E '\.com|\.org|\.net|\.in') ] && $notif "Invalid Url" -u "critical" -t 3000 \
+	-a "⬇ Downloader" && exit
+
+if echo $url | grep 'list' > /dev/null; then
+	$($prompt "Download Playlist?")
+	if [ $? -eq 1 ]; then
+		url=$(echo $url | cut -d "&" -f1)
+	fi
+	$($prompt "Download Just Audio?")
+	if [ $? -eq 0 ]; then
+		flags=" -xq --no-warnings --audio-format mp3 --audio-quality 0"
+		format=".mp3"
+	else
+		flags=" -q --no-warnings --format mp4 --audio-format mp3 --audio-quality 0"
+		format=".mp4"
+	fi
+fi
+
+title=$($ytDL --get-title $url)
+[ -e $dest ] || mkdir -p $dest
+
+$notif "Download Started" "$title" -u "normal" -t 3000 -a "⬇ Downloader"
+
+$ytDL $flags $url
+
+if [ $? -eq 0 ]; then
+	$notif "Download Complete" "$title"  -u "normal" -t 3000 -a "⬇ Downloader"
+	mv -f ./*${format} $dest
+else
+	$notif "Download Failed" "$title" -u "critical" -t 3000 -a " ⬇ Downloader"
+fi
+

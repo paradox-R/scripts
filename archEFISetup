@@ -173,3 +173,4 @@ Troubleshooting
 1. # ln -s /etc/fonts/conf.avail/10-scale-bitmap-fonts.conf /etc/fonts/conf.d/
 	Certain bitmap fonts[ e.g. noto-fonts-emoji] in fontconfig don't rescale.
 	Might affect dunst and other applications, create the above link and restart the application.
+2. Graphics drivers - mesa, xf86-video-intel vulkan-intel intel-media-driver libva-intel-driver libva-vdpau-driver
