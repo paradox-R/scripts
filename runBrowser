@@ -11,7 +11,8 @@
 #
 #Dependencies -> dmenu.
 
-options="--new-window"
+flags="--new-window"
+defURL="https://duckduckgo.com/?q="
 #url=$(dmenu -i -p "Which URL to Follow?" <&-)
 url=$(echo -e "                                        "\
 	"\nArchives"\
@@ -22,34 +23,28 @@ url=$(echo -e "                                        "\
 	"\nReddit"\
 	"\nRegExr"\
 	"\nTwitter"\
-	"\nYouTube" | dmenu -i -l 5 -p "URL : ")
+	"\nYouTube" | dmenu -i -l 5 -p "URL : " | sed -E 's/[ \t]*$//g')
 
-url=$(echo $url | sed -E 's/$[ \t]*//g')
-case ${url} in
-	"Archives") url='https://archive.org'
-		;;
-	"DevDocs") url='https://devdocs.io'
-		;;
-	"GitHub") url='https://github.com/login'
-		;;
-	"Google") url='https://google.com'
-		;;
-	"MangaPark") url='https://mangapark.net'
-		;;
-	"Reddit") url='https://reddit.com/login'
-		;;
-	"RegExr") url='https://regexr.com'
-		;;
-	"Twitter") url='https://twitter.com/login'
-		;;
-	"YouTube") url='https://youtube.com/signin'
-		;;
+case $url in
+	"Archives")	url='https://archive.org';;
+	"DevDocs") 	url='https://devdocs.io';;
+	"GitHub") 	url='https://github.com/login';;
+	"Google") 	url='https://google.com';;
+	"MangaPark") 	url='https://mangapark.net';;
+	"Reddit") 	url='https://reddit.com/login';;
+	"RegExr") 	url='https://regexr.com';;
+	"Twitter") 	url='https://twitter.com/login';;
+	"YouTube") 	url='https://youtube.com/signin';;
+	#*)		url='${defURL}${url}';;
 esac
 
-if [ -n "$url" ]
-then
-	[ ! $(echo $url | grep -E '\.com|\.org|\.net|\.in|\.io') > /dev/null ] && url=$(echo "https://duckduckgo.com/?q=${url}" | sed 's/ /+/g')
-	[ ! $(echo $url | grep -E 'https') > /dev/null ] && url=$(echo "https://${url}" | sed 's/ //g')
-	$BROWSER ${options} ${url}
+if [ -n "$url" ]; then
+	[ ! $(printf $url | grep -E '\.(com|org|net|in|io)') > /dev/null ] \
+	&& url=$(printf "${defURL}${url}" | sed 's/ /+/g')
+
+	[ ! $(printf $url | grep -E 'https') > /dev/null ] \
+	&& url=$(printf "https://${url}" | sed 's/ //g')
+
+	$BROWSER $flags $url
 fi
-exit 0
+#exit 0
