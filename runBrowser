@@ -21,6 +21,7 @@ url=$(echo -e "                                        "\
 	"\nGoogle"\
 	"\nMangaPark"\
 	"\nReddit"\
+	"\nPrivacyTools"\
 	"\nRegExr"\
 	"\nTwitter"\
 	"\nYouTube" | dmenu -i -l 5 -p "URL : " | sed -E 's/[ \t]*$//g')
@@ -31,20 +32,20 @@ case $url in
 	"GitHub") 	url='https://github.com/login';;
 	"Google") 	url='https://google.com';;
 	"MangaPark") 	url='https://mangapark.net';;
+	"PrivacyTools")	url="https://privacytools.io";;
 	"Reddit") 	url='https://reddit.com/login';;
 	"RegExr") 	url='https://regexr.com';;
 	"Twitter") 	url='https://twitter.com/login';;
 	"YouTube") 	url='https://youtube.com/signin';;
-	#*)		url='${defURL}${url}';;
+	*)	
+		if [ -n "$url" ]; then
+			[ ! $(printf $url | grep -E '\.(com|org|net|in|io)') > /dev/null ] \
+				&& url=$(printf "${defURL}${url}" | sed 's/ /+/g')
+			
+			[ ! $(printf $url | grep -E 'https') > /dev/null ] \
+				&& url=$(printf "https://${url}" | sed 's/ //g')
+		fi;;
 esac
 
-if [ -n "$url" ]; then
-	[ ! $(printf $url | grep -E '\.(com|org|net|in|io)') > /dev/null ] \
-	&& url=$(printf "${defURL}${url}" | sed 's/ /+/g')
+[ -n "$url" ] && $BROWSER $flags $url
 
-	[ ! $(printf $url | grep -E 'https') > /dev/null ] \
-	&& url=$(printf "https://${url}" | sed 's/ //g')
-
-	$BROWSER $flags $url
-fi
-#exit 0
