@@ -7,7 +7,6 @@
 #                                            |_|
 #
 #Captures a screenshot of the screen and saves it to ~/Pictures/Screenshots.
-#The destination directory is created if it doesn't exist.
 #
 #Dependencies -> scrot, dunst, notify-send
 
@@ -16,21 +15,13 @@ dest=$HOME/Media/Pictures/Screenshots
 shot=/usr/bin/scrot
 notif=/usr/bin/notify-send
 
-#[ -e ~/Pictures ] || mkdir ~/Pictures
 [ -e $dest ] || mkdir -p $dest
-#[ "$1" = "full" ] && flags='-q 100'
-#[ "$1" = "selective" ] && flags='-s -q 100'
-if [ "$1" = "full" ]; then
-	flags='-q 100'
-else
-	flags='-s -q 100'
-fi
+cd $dest
 
-#$shot $flags $filename && mv -f ./${filename} $Dest
+[ "$1" = "full" ] && flags='-q 100' || flags='-s -q 100'
+
 $shot $flags $filename
-if [ $? -eq 0 ]; then
-	mv -f ./${filename} $dest
-	$notif $filename "ScreenShot saved." -u "normal" -t 3000 -a "System 💻"
-else
-	$notif "ScreenShot Capture Failed" -u "critical" -t 3000 -a "System 💻"
-fi
+[ ! $? -eq 0 ] && $notif "ScreenShot Capture Failed" -u "critical" -t 3000 -a "System 💻" && exit
+
+$notif $filename "ScreenShot Saved" -u "normal" -t 3000 -a "System 💻"
+

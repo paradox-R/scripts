@@ -19,13 +19,12 @@
 clip=/usr/bin/xclip
 notif=/usr/bin/notify-send
 filepath=$HOME/DotFiles/unicodeEmojis
-emoji=$(awk '{gsub("(; U+.*)+","")} {print $0}' $filepath | dmenu -i -l 10 -p 'Pick : ')
 
-if [ ! "$emoji" = '' ]; then
-	emoji=$(echo $emoji | awk '{print $1}')
-	echo $emoji | tr -d '\n' | $clip -selection clipboard
-	[ $? -eq 0 ] && $notif $emoji "copied to Clipboard." -u "normal" -t 3000 -a "System 💻"
-else
-	$notif "Nothing in Selection" -u "normal" -t 1000 -a "System 💻"
-fi
+#emoji=$(awk '{gsub("(; U+.*)+","")} {print $0}' $filepath | dmenu -i -l 10 -p 'Pick : ' | awk '{print $1}' )
+emoji=$(cut -d ';' -f1 $filepath | dmenu -i -l 10 -p 'Pick : ' | awk '{print $1}' )
+
+[ $emoji = '' ] && $notif "Nothing in Selection" -u "normal" -t 1000 -a "System 💻" && exit
+echo $emoji | tr -d '\n' | $clip -selection clipboard
+
+[ $? -eq 0 ] && $notif "$emoji" "Copied to Clipboard." -u "normal" -t 3000 -a "System 💻"
 

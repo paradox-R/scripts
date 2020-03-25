@@ -13,14 +13,10 @@
 
 #Get the connectivity params
 getConnectionParams(){
-	#interface=$(nmcli | grep 'connected to' | sed 's/://' | awk '{print $1}')
 	interface=$(nmcli | awk -F: '/connected to/ {print $1}')
-	#io=$(grep $interface /proc/net/dev | awk '{print "in="$2, "out="$10}')
-	if [ $interface='wlo1' ]; then
-		io=$(awk '/wlo1/ {print "inB="$2, "outB="$10}' /proc/net/dev)
-	else
-		io=$(awk '/lo/ {print "inB="$2, "outB="$10}' /proc/net/dev)
-	fi
+	[ $interface='wlo1' ] && io=$(awk '/wlo1/ {print "inB="$2, "outB="$10}' /proc/net/dev)
+	[ $interface='lo' ] && io=$(awk '/lo/ {print "inB="$2, "outB="$10}' /proc/net/dev)
+	
 	eval $io
 	now=$(date +%S)
 	now=${now#0}
@@ -29,27 +25,25 @@ getConnectionParams(){
 #Calculate Connection Speeds
 calcSpeeds(){
 	val=$1
-	oldVal=$2
-	currTimeNT=$3
-
-	timeDiff=$(($currTimeNT-$oldTimeNT))
+	prevVal=$2
+	timeDiff=$3
 	if [ ! $timeDiff -eq 0 ]; then
-    vel=$(echo "($val-$oldVal)/$timeDiff" | bc)
-    #vel=${vel#-}
-    if [ $vel -gt 1048576 ]; then
-      vel=$(echo "scale=1;$vel/1048576" | bc)
-      echo "$vel MB/s"
-    elif [ $vel -gt 1024 ]; then
-      vel=$(echo "scale=1;$vel/1024" | bc)
-     echo "$vel KB/s"
-	elif [ $vel -lt 1 ]; then
-	echo "0 B/s"
-    else
-      echo "$vel B/s"
-    fi
-  else
-    echo "0 B/s"
-  fi
+		vel=$(echo "($val-$prevVal)/$timeDiff" | bc)
+	    	#vel=${vel#-}
+	    	if [ $vel -ge 1048576 ]; then
+			vel=$(echo "scale=1;$vel/1048576" | bc)
+			echo "$vel MB/s"
+		elif [ $vel -ge 1024 ]; then
+			vel=$(echo "scale=1;$vel/1024" | bc)
+			echo "$vel KB/s"
+		elif [ $vel -lt 1 ]; then
+			echo "0 B/s"
+		else
+			echo "$vel B/s"
+		fi
+	else
+		echo "0 B/s"
+	fi
 }
 
 #Connection Details
@@ -58,13 +52,14 @@ getNetworkTraffic(){
 		getConnectionParams
 		in=$inB
 		out=$outB
-		currTimeNT=$now
-		inSpeed=$(calcSpeeds $in $oldInB $currTimeNT)
-		outSpeed=$(calcSpeeds $out $oldOutB $currTimeNT)
+		timeDiffNT=$(($now-$prevTimeNT))
 
-		oldInB=$in
-		oldOutB=$out
-		oldTimeNT=$currTimeNT
+		inSpeed=$(calcSpeeds $in $prevInB $timeDiffNT)
+		outSpeed=$(calcSpeeds $out $prevOutB $timeDiffNT)
+
+		prevInB=$in
+		prevOutB=$out
+		prevTimeNT=$now
 
 		if [ $interface="wlo1" ]; then
 			cmd=$(nmcli device wifi list | awk '/^*/ {print "ssid="$3, "signal="$8}')
@@ -78,7 +73,8 @@ getNetworkTraffic(){
 		fi
 	else
 		availConn=$(nmcli device wifi list | awk '$7 > 60' | wc -l)
-		echo "Connection 🌏 : [$(expr $availConn - 1) *]"
+		#echo "Connection 🌏 : [$(expr $availConn - 1) *]"
+		echo "Connection : [$(expr $availConn - 1) *]"
 	fi
 }
 
@@ -87,28 +83,21 @@ getBacklight(){
 	bcklit=$(xbacklight -get)
 	bcklit=${bcklit%.*}
 	echo "Screen ☀ : $bcklit%"
-	#if [ $bcklit -le 50 ]; then
-	#	echo "Screen ☀ : $bcklit% 🔅"
-	#else
-	#	echo "Screen ☀ : $bcklit% 🔆"
-	#fi
+	#[ $bcklit -le 50 ] && echo "Screen ☀ : $bcklit% 🔅" || echo "Screen ☀ : $bcklit% 🔆"
 }
 
 #Volume Params
 getVol(){
 	if amixer get Master | grep '\[on\]' > /dev/null; then
-		#echo Volume : $(amixer get Master | tail -n1 | sed -r 's/.*\[(.*)%\].*/\1/')%
 		vol=$(amixer get Master | tail -n1 | sed -r 's/.*\[(.*)%\].*/\1/')
-		if [ $vol -gt 0 ] && [ $vol -le 33 ]; then
-			#echo "Vol : $vol% 🔈"
-			echo "Vol : $vol% "
-		elif [ $vol -gt 33 ] && [ $vol -le 66 ]; then
-			#echo "Vol : $vol% 🔉"
-			echo "Vol : $vol% "
-		else
-			#echo "Vol : $vol% 🔊"
-			echo "Vol : $vol% "
-		fi
+		#if [ $vol -gt 0 ] && [ $vol -le 33 ]; then
+		#	echo "Vol : $vol% 🔈"
+		#elif [ $vol -gt 33 ] && [ $vol -le 66 ]; then
+		#	echo "Vol : $vol% 🔉"
+		#else
+		#	echo "Vol : $vol% 🔊"
+		#fi
+		echo "Vol : $vol% "
 	else
 		echo Volume : --
 		#echo "Vol : Mute 🔇 "
@@ -118,7 +107,7 @@ getVol(){
 #Local current time
 getTime(){
 	#echo "🗓 $(date +%B\ %d\,\ %Y\ \ \🕛\ %T)" #\ %Z)"
-	echo " $(date +%B\ %d\,\ %Y\ %T\ %Z)"
+	echo " $(date +%B\ %d\,\ %Y\ \ %T\ %Z)"
 }
 
 #Get the current Memory stats
@@ -156,39 +145,35 @@ getLoad(){
 
 #Weather Report
 getWeather(){
-	if $(ping -q -c 1 1.1 > /dev/null);	then
+	if $(ping -qc 1 1.1 > /dev/null); then
 		#wttr.in->>l=location, c=weather condition, C=wether condition text,
-		#t=Temp, w=wind dir and speed, m=moonphase, M=moonday, p=precipitation/
+		#t=Temp, w=wind dir and speed, m=moonphase, M=moonday, p=precipitation,
 		#location="Your,City"
-		#report=$(curl wttr.in/$location\?format="%l:+%c+%C,+%t,+%w,+%m+%M")
-		report=$(curl wttr.in\?format="%l:+%c+%C,+%t,+%w,+%m+%M")
-		if (echo $report | grep "html" > /dev/null); then
-			echo "** Weather Report Unavailable **"
-		else
-			echo $report
-		fi
+		#curl -s wttr.in/$location\?format="%l:+%c+%C,+%t,+%w,+%m+%M"
+		curl -s wttr.in\?format="%l:+%c+%C,+%t,+%w,+%m+%M"
 	else
-		echo "** Network Unavailable **"
+		echo "Network Unavailable"
 	fi
 }
 
 #Set Initial Values
 getConnectionParams
-oldInB=$inB
-oldOutB=$outB
-oldTimeNT=$now
-oldTimeW=0
+prevInB=$inB
+prevOutB=$outB
+prevTimeNT=$now
+prevTimeW=0
 
 while true
 do
 	currTimeW=$(date +%M)
 	currTimeW=${currTimeW#0}
-	timeDiffW=$((currTimeW-oldTimeW))
-	if [ $timeDiffW -gt 5 ] || $(echo $weather | grep Unavailable > /dev/null); then
-		oldTimeW=$currTimeW
-		weather=$(getWeather)
+	timeDiffW=$((currTimeW-prevTimeW))
+	if [ -z '$report' ] || [ $timeDiffW -ge 5 ] || [ $(echo $report | grep 'Unavailable') ]; then
+		prevTimeW=$currTimeW
+		report=$(getWeather)
+		[ $(echo $report | grep 'html') ] && report='Weather Report Unavailable'
 	fi
 
-	xsetroot -name "$weather;$(getNetworkTraffic) | $(getBacklight) | $(getVol) | $(getTemp) | $(getLoad) | $(getMemStats) | $(getBatStats) | $(getTime)"
+	xsetroot -name "$report;$(getNetworkTraffic) | $(getBacklight) | $(getVol) | $(getTemp) | $(getLoad) | $(getMemStats) | $(getBatStats) | $(getTime)"
 	sleep 1s;
 done

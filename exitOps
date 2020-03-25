@@ -19,11 +19,10 @@ prompt=$HOME/bin/promptUser
 operation=$(echo -e "Logout"\
 		"\nReboot"\
 		"\nShutdown"\
-		"\nSuspend" | dmenu -i -l 5 -p "")
+		"\nSuspend" | dmenu -i -l 5 -p "" | sed -E 's/$[ \t]*//g')
 
 [ -z $operation ] && exit
 
-operation=$(echo $operation | sed -E 's/$[ \t]*//g')
 case $operation in
 	"Logout") 
 		$prompt "Logout ⁉"
@@ -38,3 +37,4 @@ case $operation in
 		$prompt "Suspend All Operations ⁉"
 		[ $? -eq 0 ] && $(systemctl suspend);;
 esac
+
