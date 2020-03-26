@@ -25,9 +25,9 @@ url=$(xclip -selection primary -o)
 [ -e $dest ] || mkdir -p $dest
 cd $dest
 
-[ -z "$url" ] && $notif "Nothing to Download" -u "normal" -t 3000 -a "⬇ Downloader" && exit 
+[ -z "$url" ] && $notif "Nothing to Download" -u "normal" -t 3000 -a "⬇ Downloader" && exit 1
 [ ! $(echo $url | grep -E '\.(com|org|net|in)') ] && $notif "Invalid Url." -u "critical" -t 3000 \
-	-a "⬇ Downloader" && exit
+	-a "⬇ Downloader" && exit 1
 
 [ $(echo $url | grep 'list') ] && 
 	options="Download playlist\nDownload current video\nExtract audio from playlist\nExtract audio from current video" ||
@@ -50,11 +50,12 @@ case $format in
 		flags=" -q --no-warnings --format mp4 --audio-format mp3 --audio-quality 0";;
 	*)
 		$notif "Nothing To Download" "Bailing..." -u "normal" -t 3000 -a "⬇ Downloader"
-		exit;;
+		exit ;;
 esac
 
 title=$($ytDL --get-title $url) 
-[ -z "$title" ] && $notif "Invalid Url" "Bailing..." -u "critical" -t 3000 -a "⬇ Downloader" && exit
+[ -z "$title" ] && $notif "Something's Wrong!!" "Bailing..." -u "critical" -t 3000 -a "⬇ Downloader" && 
+	exit 1
 
 $notif "Download Started" "$title" -u "normal" -t 3000 -a "⬇ Downloader"
 

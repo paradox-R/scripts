@@ -21,7 +21,6 @@ cd $dest
 [ "$1" = "full" ] && flags='-q 100' || flags='-s -q 100'
 
 $shot $flags $filename
-[ ! $? -eq 0 ] && $notif "ScreenShot Capture Failed" -u "critical" -t 3000 -a "System 💻" && exit
-
-$notif $filename "ScreenShot Saved" -u "normal" -t 3000 -a "System 💻"
+[ ! $? -eq 0 ] && $notif "ScreenShot Capture Failed" -u "critical" -t 3000 -a "System 💻" || 
+	$notif $filename "ScreenShot Saved" -u "normal" -t 3000 -a "System 💻"
 

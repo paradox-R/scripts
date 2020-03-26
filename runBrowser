@@ -38,7 +38,7 @@ case $url in
 	"Twitter") 	url='https://twitter.com/login';;
 	"YouTube") 	url='https://youtube.com/signin';;
 	*)
-		[ -z $url ] && exit	
+		[ -z $url ] && exit 1	
 		[ ! $(echo $url | grep -E '\.(com|org|net|in|io)') ] \
 			&& url=$(echo "${defURL}${url}" | sed 's/ /+/g')
 			

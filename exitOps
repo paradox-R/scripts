@@ -21,7 +21,7 @@ operation=$(echo -e "Logout"\
 		"\nShutdown"\
 		"\nSuspend" | dmenu -i -l 5 -p "" | sed -E 's/$[ \t]*//g')
 
-[ -z $operation ] && exit
+[ -z $operation ] && exit 1
 
 case $operation in
 	"Logout") 

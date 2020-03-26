@@ -168,7 +168,7 @@ do
 	currTimeW=$(date +%M)
 	currTimeW=${currTimeW#0}
 	timeDiffW=$((currTimeW-prevTimeW))
-	if [ -z '$report' ] || [ $timeDiffW -ge 5 ] || [ $(echo $report | grep 'Unavailable') ]; then
+	if [ -z '$report' ] || [ $timeDiffW -ge 5 ] || [ $(echo $report | grep 'Unavailable') > /dev/null ]; then
 		prevTimeW=$currTimeW
 		report=$(getWeather)
 		[ $(echo $report | grep 'html') ] && report='Weather Report Unavailable'
