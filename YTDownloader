@@ -12,12 +12,10 @@
 #| |_| | (_) \ V  V /| | | | | (_) | (_| | (_| |  __/ |   
 #|____/ \___/ \_/\_/ |_| |_|_|\___/ \__,_|\__,_|\___|_|   
 # 
-#Simple Program to download Video/Audio(s) from Youtube.
+#Simple Program to download Video/Audio(s) from Youtube or other such servies.
 #
-#Dependencies - youtube-dl, dmenu[promptUser], notify-send
+#Dependencies - youtube-dl, dmenu[promptUser], dunst/notify-send
 
-ytDL=/usr/bin/youtube-dl
-notif=/usr/bin/notify-send
 prompt=$HOME/bin/promptUser
 dest=$HOME/Media/YTDownloads
 url=$(xclip -selection primary -o)
@@ -25,15 +23,15 @@ url=$(xclip -selection primary -o)
 [ -e $dest ] || mkdir -p $dest
 cd $dest
 
-[ -z "$url" ] && $notif "Nothing to Download" -u "normal" -t 3000 -a "⬇ Downloader" && exit 1
-[ ! $(echo $url | grep -E '\.(com|org|net|in)') ] && $notif "Invalid Url." -u "critical" -t 3000 \
-	-a "⬇ Downloader" && exit 1
+[ -z "$url" ] && dunstify -u "normal" -t 3000 -a " Downloader" "Nothing to do," "Bailing..." && exit 1
+[ ! $(echo $url | grep -E '\.(com|org|net|in)') ] && dunstify -u "critical" -t 3000 \
+	-a " Downloader" "Invalid Url" && exit 1
 
 [ $(echo $url | grep 'list') ] && 
 	options="Download playlist\nDownload current video\nExtract audio from playlist\nExtract audio from current video" ||
-	options="Download current video\nExtract audio from current video" 
+	options="Download video\nExtract audio from video" 
 
-format=$(echo -e $options | dmenu -i -l 5 -p "Select A Download Format :" | sed -E 's/[ \t]*$//g')
+format=$(echo -e $options | dmenu -i -l 5 -p "Select a Download Format : " | sed -E 's/[ \t]*$//g')
 
 case $format in
 	"Extract audio from playlist") 
@@ -42,24 +40,25 @@ case $format in
 	"Download playlist") 
 		url=$(echo $url | cut -d "&" -f1-2)
 		flags=" -q --no-warnings --format mp4 --audio-format mp3 --audio-quality 0";;
-	"Extract audio from current video")
+	"Extract audio from video")
 		url=$(echo $url | cut -d "&" -f1)
 		flags=" -xq --no-warnings --audio-format mp3 --audio-quality 0";;
-	"Download current video") 
+	"Download video") 
 		url=$(echo $url | cut -d "&" -f1)
 		flags=" -q --no-warnings --format mp4 --audio-format mp3 --audio-quality 0";;
 	*)
-		$notif "Nothing To Download" "Bailing..." -u "normal" -t 3000 -a "⬇ Downloader"
+		dunstify -u "normal" -t 3000 -a " Downloader" "Nothing to do," "Bailing..."
 		exit ;;
 esac
 
-title=$($ytDL --get-title $url) 
-[ -z "$title" ] && $notif "Something's Wrong!!" "Bailing..." -u "critical" -t 3000 -a "⬇ Downloader" && 
+title=$(youtube-dl --get-title $url)
+
+[ -z "$title" ] && dunstify -u "critical" -t 3000 -a " Downloader" "Something's Wrong," "Bailing..." && 
 	exit 1
 
-$notif "Download Started" "$title" -u "normal" -t 3000 -a "⬇ Downloader"
+dunstify -u "normal" -t 3000 -a " Downloader" "$title" "Download Started"
 
-$ytDL $flags $url
-[ $? -eq 0 ] && $notif "Download Complete" "$title"  -u "normal" -t 3000 -a "⬇ Downloader" || 
-	$notif "Download Failed" "$title" -u "critical" -t 3000 -a " ⬇ Downloader"
+youtube-dl $flags $url
+[ $? -eq 0 ] && dunstify -u "normal" -t 3000 -a " Downloader" "$title" "Download Complete" || 
+	dunstify -u "critical" -t 3000 -a "  Downloader" "$title" "Download Failed"
 

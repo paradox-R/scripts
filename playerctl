@@ -1,0 +1,38 @@
+#!/usr/bin/env sh
+#       _                           _   _ 
+# _ __ | | __ _ _   _  ___ _ __ ___| |_| |
+#| '_ \| |/ _` | | | |/ _ \ '__/ __| __| |
+#| |_) | | (_| | |_| |  __/ | | (__| |_| |
+#| .__/|_|\__,_|\__, |\___|_|  \___|\__|_|
+#|_|            |___/                     
+#
+#Dependencies - mpc/mpd, dunst
+
+notify_id=3002
+i_play=" 契"
+i_pause=" "
+
+notify(){
+	status=`mpc status`
+	track=`mpc -q current | cut -d "." -f1`
+	$(echo $status | grep -E '\[paused\]' > /dev/null) && status="$i_pause Paused" || 
+		status="$i_play Now Playing"
+	dunstify -u normal -r $notify_id -t 3000 -a "$status" "$track" 
+}
+
+
+case $1 in
+	next)
+		mpc -q next
+		$(notify);;
+	prev)
+		mpc -q prev
+		$(notify);;
+	toggle)
+		mpc -q toggle
+		$(notify);;
+esac
+
+
+
+

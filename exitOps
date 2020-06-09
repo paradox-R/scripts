@@ -16,25 +16,22 @@
 #Dependencies - dmenu[promptUser]
 
 prompt=$HOME/bin/promptUser
-operation=$(echo -e "Logout"\
-		"\nReboot"\
-		"\nShutdown"\
-		"\nSuspend" | dmenu -i -l 5 -p "" | sed -E 's/$[ \t]*//g')
+operation=$(echo -e " Logout\n Reboot\n Shutdown\n Suspend" | dmenu -i -l 5 -p "" | sed -E 's/$[ \t]*//g')
 
-[ -z $operation ] && exit 1
+[ -z "$operation" ] && exit 1
 
 case $operation in
-	"Logout") 
-		$prompt "Logout ⁉"
+	" Logout") 
+		$prompt " Logout?"
 		[ $? -eq 0 ] && $(pkill -kill -u $USER);;
-	"Reboot") 
-		$prompt "Reboot System ⁉"
+	" Reboot") 
+		$prompt " Reboot System?"
 		[ $? -eq 0 ] && $(reboot);;
-	"Shutdown")
-		$prompt "ShutDown Now ⁉"
+	" Shutdown")
+		$prompt " ShutDown Now?"
 		[ $? -eq 0 ] && $(shutdown now);;
-	"Suspend")
-		$prompt "Suspend All Operations ⁉"
+	" Suspend")
+		$prompt " Suspend All Operations?"
 		[ $? -eq 0 ] && $(systemctl suspend);;
 esac
 

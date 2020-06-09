@@ -1,0 +1,35 @@
+#!/usr/bin/env sh
+# _____                 _ _
+#| ____|_ __ ___   ___ (_|_)
+#|  _| | '_ ` _ \ / _ \| | |
+#| |___| | | | | | (_) | | |
+#|_____|_| |_| |_|\___// |_|
+#                    |__/
+# ____       _           _
+#/ ___|  ___| | ___  ___| |_ ___  _ __
+#\___ \ / _ \ |/ _ \/ __| __/ _ \| '__|
+# ___) |  __/ |  __/ (__| || (_) | |
+#|____/ \___|_|\___|\___|\__\___/|_|
+#
+#Allows for an emoji to be selected from anywhere
+#And copies it to clipboard.
+#
+#Dependencies - Dmenu, xclip, dunst/notify-send
+
+var=$(echo -e "Emoji\nUnicode Emoji\nFont Awesome Emoji" | dmenu -i -l 5 -p " " | sed -E 's/[ \t]*$//g')
+
+case $var in
+	"Emoji") filepath=$HOME/bin/references/emoji;;
+	"Unicode Emoji") filepath=$HOME/bin/references/unicodeEmoji;;
+	"Font Awesome Emoji") filepath=$HOME/bin/references/fa-emoji;;
+	*) dunstify -u "normal" -t 3000 -a "System 💻" "Nothing in Selection" && exit;;
+esac
+
+#emoji=$(awk '{gsub("(; U+.*)+","")} {print $0}' $filepath | dmenu -i -l 10 -p 'Pick : ' | awk '{print $1}' )
+emoji=$(cut -d ';' -f1 $filepath | dmenu -i -l 10 -p ' ' | awk '{print $1}' )
+
+[ "$emoji" = '' ] && dunstify -u "normal" -t 1000 -a "System 💻" "Nothing in Selection" && exit 
+echo $emoji | tr -d '\n' | xclip -selection clipboard
+
+[ $? -eq 0 ] && dunstify -u "normal" -t 3000 -a "System 💻" "$emoji Copied to Clipboard"
+

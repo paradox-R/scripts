@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+# ____       _ __        __    _ _ 
+#/ ___|  ___| |\ \      / /_ _| | |
+#\___ \ / _ \ __\ \ /\ / / _` | | |
+# ___) |  __/ |_ \ V  V / (_| | | |
+#|____/ \___|\__| \_/\_/ \__,_|_|_|
+#
+#Sets any given image as wallpaper/ Desktop Background
+#
+#Dependencies - feh, dunst
+
+dest="$HOME/Media/Pictures"
+flags=" --no-fehbg --bg-scale"
+wall=$dest"/wall"
+
+[ -e $dest ] || mkdir -p $dest
+
+cp "$1" $wall
+
+feh $flags $wall
+[ $? -eq 0 ] && dunstify -u normal -t 3000 -a "System 💻" "Wallpaper Changed"
+

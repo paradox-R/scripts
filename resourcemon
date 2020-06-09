@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+# ____                                    
+#|  _ \ ___  ___  ___  _   _ _ __ ___ ___ 
+#| |_) / _ \/ __|/ _ \| | | | '__/ __/ _ \
+#|  _ <  __/\__ \ (_) | |_| | | | (_|  __/
+#|_| \_\___||___/\___/ \__,_|_|  \___\___|                                         
+# __  __             _ _             
+#|  \/  | ___  _ __ (_) |_ ___  _ __ 
+#| |\/| |/ _ \| '_ \| | __/ _ \| '__|
+#| |  | | (_) | | | | | || (_) | |   
+#|_|  |_|\___/|_| |_|_|\__\___/|_|   
+#                                    
+#Dependencies - lm_sensors, dunst
+
+notify_id=3003
+
+getDiskUsage(){
+	echo " Home Usage $(df ~ | awk '{print $5}' | tail -n1)"
+}
+
+getCpuLoad(){
+	load=`awk '{print $1}' /proc/loadavg`
+	numOfCores=`grep 'processor' /proc/cpuinfo | wc -l`
+	loadAvg=`echo "scale=2;($load/$numOfCores*100)" | bc -l`
+	echo " Load Avg. $loadAvg%"
+}
+
+getCpuTemp(){
+	echo " Chip Temp. $(sensors | awk '/^temp1/ {print $2 $3}')"
+}
+
+getMemStats(){
+	echo " Memory Usage $(free -h | awk '/^Mem/ {print $3 " / " $2}')"
+}
+
+notify(){
+	stats="$(getDiskUsage)\n$(getCpuLoad)\n$(getCpuTemp)\n$(getMemStats)"
+	proc=$(ps axch -o cmd,%cpu --sort=-%cpu | head -n5)
+	info=$(echo -e "$stats\n------------------------------\n$proc")
+	dunstify -u normal -r $notify_id -a "Resource Usage" "$info"
+}
+
+$(notify)
+

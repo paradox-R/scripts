@@ -1,0 +1,43 @@
+#!/usr/bin/env sh
+#__        __         _   _               ____                       _   
+#\ \      / /__  __ _| |_| |__   ___ _ __|  _ \ ___ _ __   ___  _ __| |_ 
+# \ \ /\ / / _ \/ _` | __| '_ \ / _ \ '__| |_) / _ \ '_ \ / _ \| '__| __|
+#  \ V  V /  __/ (_| | |_| | | |  __/ |  |  _ <  __/ |_) | (_) | |  | |_ 
+#   \_/\_/ \___|\__,_|\__|_| |_|\___|_|  |_| \_\___| .__/ \___/|_|   \__|
+#
+#Dependencies - curl, dunst                   
+
+notify_id=3004
+
+getWeather(){
+	if $(ping -qc 1 1.1 > /dev/null); then
+		#wttr.in->>l=location, c=weather condition, C=wether condition text,
+		#t=Temp, w=wind dir and speed, m=moonphase, M=moonday, p=precipitation,
+		#location="Your,City"
+		#curl -s wttr.in/$location\?format="%l:+%c+%C,+%t,+%w,+%m+%M"
+		#curl -s wttr.in\?format="%l:+%c+%C,+%t,+%w,+%m+%M"
+		report=$(curl -s wttr.in\?format='%l:%c+%C,+%t,+%w,+%m+%M')
+		[ -z "$report" ] || $(echo "$report" | grep -iE 'html|Unknown|Sorry|bad' > /dev/null) && 
+			report="Weather Report Unavailable"
+	else
+		report="Network Unavailable"
+	fi
+	echo $report
+}
+
+notify(){
+	while true; do
+		weather=$(getWeather)
+		loc=`echo $weather | cut -d ":" -f1`
+		weather=`echo $weather | cut -d ":" -f2`
+		if $(echo $weather | grep "Unavailable" > /dev/null); then
+			sleep 1m
+		else
+			dunstify -u normal -r $notify_id -t 5000 -a "Weather Report" "$loc" "$weather"
+			sleep 30m
+		fi
+	done
+}
+
+$(notify)
+

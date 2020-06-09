@@ -1,0 +1,179 @@
+#!/usr/bin/env sh
+# ______        ____  __   ____  _        _
+#|  _ \ \      / /  \/  | / ___|| |_ __ _| |_ _   _ ___
+#| | | \ \ /\ / /| |\/| | \___ \| __/ _` | __| | | / __|
+#| |_| |\ V  V / | |  | |  ___) | || (_| | |_| |_| \__ \
+#|____/  \_/\_/  |_|  |_| |____/ \__\__,_|\__|\__,_|___/
+#
+#Simple Program to set the Status for the DWM Bar.
+#The Semi-colon separates the status into topbar and bottom bar texts.
+#
+#Dependencies -> nmcli, xbacklight, amixer, lm_sensors, curl.
+
+#Get the connectivity params
+getConnectionParams(){
+	interface=`ip route |grep -oPm1 '(?<=dev )[^ ]+'`
+	rx=`cat /sys/class/net/$interface/statistics/rx_bytes`
+	tx=`cat /sys/class/net/$interface/statistics/tx_bytes`
+}
+
+#Calculate Connection Speeds
+calcSpeeds(){
+	vel=$(($1-$2))
+	#vel=${vel#-}
+	if [ "$vel" -ge 1000000 ]; then
+		vel="$(echo "scale=1;$vel/1000000" | bc -l) MB/s"
+	elif [ "$vel" -ge 1000 ]; then
+		vel="$(echo "scale=1;$vel/1000" | bc -l) KB/s"
+	elif [ "$vel" -lt 1 ]; then
+		vel="0 B/s"
+	else
+		vel="$vel B/s"
+	fi
+	echo "$vel"
+}
+
+#Connection Details
+getNetTraffic(){
+	if [ ! -z "$(ip route)" ]; then
+		getConnectionParams
+		in=$(calcSpeeds $rx $(cat "$prevRx"))
+		out=$(calcSpeeds $tx $(cat "$prevTx"))
+		echo $rx > "$prevRx"
+		echo $tx > "$prevTx"
+		if [ $interface = "wlo1" ]; then
+			cmd=$(nmcli device wifi list | awk '/^*/ {print "ssid="$3, "signal="$8}')
+			eval $cmd
+			traff="直 $ssid [$signal%]  $out  $in" #▲▼⬆⬇
+		else
+			ssid=$(nmcli | awk '/connected/ {print $4}')
+			traff=" $ssid  $out  $in"
+		fi
+	else
+		availConn=$(nmcli device wifi list | awk '$7 > 60' | wc -l)
+		traff="爵 Available [$(($availConn-1)) *]"
+	fi
+	echo "$traff"
+}
+
+#Get Brightness
+getBacklight(){
+	bcklit=`xbacklight -get`
+	bcklit=${bcklit%.*}
+	[ "$bcklit" -le 50 ] && echo "🔅 $bcklit%" || echo "🔆 $bcklit%"
+}
+
+#Volume Params
+getVolume(){
+	vol=`amixer get Master | tail -n1`
+	if $(echo $vol | grep '\[on\]' > /dev/null); then
+		vol=$(echo $vol | sed -r 's/.*\[(.*)%\].*/\1/')
+		if [ "$vol" -gt 0 ] && [ "$vol" -le 33 ]; then
+			vol="奄 $vol%"
+		elif [ "$vol" -gt 33 ] && [ "$vol" -le 66 ]; then
+			vol="奔 $vol%"
+		else
+			vol="墳 $vol%"
+		fi
+	else
+		vol="Mute 婢"
+	fi
+	echo "$vol"
+}
+
+#Local current time
+getLocalTime(){
+	echo " $(date +%B\ %d\,\ %Y\ \\ %H\:%M)"
+}
+
+#Get the current Memory stats
+getMemStats(){
+	echo "  $(free -h | awk '/^Mem/ {print $3 "/" $2}')"
+}
+
+#Battery Stats
+getBatStats(){
+	batStatus=`cat /sys/class/power_supply/BAT0/status`
+	if [ "$batStatus" = "Full" ]; then
+		bat="   100"
+	else
+		bat=`cat /sys/class/power_supply/BAT0/capacity`
+		if [ "$bat" -ge 90 ]; then
+			icon="  "
+		elif [ "$bat" -ge 75 ]; then
+			icon="  "
+		elif [ "$bat" -ge 50 ]; then
+			icon="  "
+		elif [ "$bat" -ge 25 ]; then
+			icon="  "
+		else
+			icon="  "
+		fi
+
+		if [ "$batStatus" = "Charging" ]; then
+			icon="$icon "
+		elif [ "$batStatus" = "Discharging" ]; then
+			icon="$icon "
+		else
+			icon="$icon "
+		fi
+	fi
+	echo "$icon$bat%"
+}
+
+#CPU Temp
+getCpuTemp(){
+	echo " $(sensors | awk '/^temp1/ {print $2 $3}')"
+}
+
+#CPU Load Avg
+getCpuLoad(){
+	load=`awk '{print $1}' /proc/loadavg`
+	numOfCores=`grep 'processor' /proc/cpuinfo | wc -l`
+	loadAvg=`echo "scale=2;($load/$numOfCores*100)" | bc -l`
+	echo " $loadAvg%"
+}
+
+#Disk Usage
+getDiskUsage(){
+	echo " $(df ~ | awk '{print $5}' | tail -n1)"
+}
+
+#Weather Report
+getWeatherReport(){
+	if $(ping -qc 1 1.1 > /dev/null); then
+		#wttr.in->>l=location, c=weather condition, C=wether condition text,
+		#t=Temp, w=wind dir and speed, m=moonphase, M=moonday, p=precipitation,
+		#location="Your,City"
+		#curl -s wttr.in/$location\?format="%l:+%c+%C,+%t,+%w,+%m+%M"
+		#curl -s wttr.in\?format="%l:+%c+%C,+%t,+%w,+%m+%M"
+		report=$(curl -s wttr.in\?format='%c+%C,+%t,+%w,+%m+%M')
+		[ -z "$report" ] || $(echo "$report" | grep -E 'html|Unknown|Sorry' > /dev/null) && 
+			report="Weather Report Unavailable"
+	else
+		report="Network Unavailable"
+	fi
+	echo "$report"
+}
+
+#Music Player
+getCurrTrack(){
+	status=`mpc status`
+	track=`mpc -q current | cut -d "." -f1`
+	$(echo "$status" | grep -E '\[playing\]' > /dev/null) && echo " 契 $track" ||
+		echo "  $track"
+}
+
+#Set Initial Values
+prevRx=$XDG_CACHE_HOME"/prevRx"
+prevTx=$XDG_CACHE_HOME"/prevTx"
+echo $rx > "$prevRx"
+echo $tx > "$prevTx"
+weather=$(getWeatherReport)
+sp=" • "
+
+while sleep 1s; do
+	[ $(($SECONDS % 900)) -eq 0 ] || $(echo $report | grep 'Unavailable' > /dev/null) && weather=$(getWeatherReport)
+	xsetroot -name "$weather;$sp$(getCurrTrack)$sp$(getNetTraffic)$sp$(getBacklight)$sp$(getVolume)$sp$(getDiskUsage)$sp$(getCpuLoad)$sp$(getCpuTemp)$sp$(getMemStats)$sp$(getBatStats)$sp$(getLocalTime)$sp"
+done
+

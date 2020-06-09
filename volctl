@@ -1,0 +1,46 @@
+#!/usr/bin/env sh
+#__     __    _      _   _ 
+#\ \   / /__ | | ___| |_| |
+# \ \ / / _ \| |/ __| __| |
+#  \ V / (_) | | (__| |_| |
+#   \_/ \___/|_|\___|\__|_|
+#                          
+#Dependencies - pulseAudio, dunst
+
+notify_id=3000
+i_mute=" 婢"
+i_unmute=" 墳"
+
+Toggle(){
+	#toggle between mute and unmute
+	#amixer -q set Master toggle
+	pamixer -t
+	toggle=`$(pamixer --get-mute) > /dev/null && echo "Muted" || echo "Unmuted"`
+	dunstify -u normal -r $notify_id -a "Speakers $toggle" -t 3000 " "
+}
+
+notify(){
+	vol=`pamixer --get-volume`
+	#bar=$(seq -s "─" $(($vol / 5)) | sed 's/[0-9]//g')
+	dunstify -u normal -r $notify_id -a "Volume $vol%" -t 3000 " "
+}
+
+case $1 in
+	up)
+		#amixer -q set Master +5%
+		pamixer --get-mute > /dev/null && $(Toggle)
+		pamixer -i 5
+		$(notify);;
+	down)
+		#amixer -q set Master -5%
+		pamixer --get-mute > /dev/null && $(Toggle)
+		pamixer -d 5
+		$(notify);;
+	boost)
+		pamixer --get-mute > /dev/null && $(Toggle)
+		pamixer --allow-boost -i 5
+		$(notify);;
+	toggle)
+		$(Toggle);;
+esac
+
