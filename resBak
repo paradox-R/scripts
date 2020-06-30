@@ -1,0 +1,43 @@
+#!/usr/bin/env sh
+
+backupDir="$HOME/pkgs_Bak"
+pacPkgs="$backupDir/pacPkgs.bak"
+aurPkgs="$backupDir/aurPkgs.bak"
+
+backup(){
+	[ ! -d "$backupDir" ] && mkdir "$backupDir"
+	cd $backupDir
+
+	pacman -Qentq > $pacPkgs
+	pacman -Qemtq > $aurPkgs
+}
+
+restore(){
+	[ "$(ping -c1 1.1)" > /dev/null ] || exit 1
+	[ ! -d "$backupDir" ] && exit 1
+
+	[ -e "$pacPkgs" ] && sudo pacman -S --needed - < $pacPkgs
+
+	if [ -e "$aurPkgs" ]; then
+		[ "$(pacman -Qs yay)" > /dev/null ] || $(instlHelper)
+		[ "$?" -eq 0 ] && yay -S --needed < $aurPkgs
+	fi
+}
+
+instlHelper(){
+	sudo pacman -Syu git base-devel
+	git clone https://aur.archlinux.org/yay.git
+	cd yay
+	makepkg -si
+	cd ..
+}
+
+case $1 in
+	backup|restore)
+		$($1);;
+	*)
+		echo -e "Unknown Option...\nBailing..."
+		exit 1;;
+esac
+
+

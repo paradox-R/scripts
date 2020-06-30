@@ -24,8 +24,10 @@ url=$(xclip -selection primary -o)
 cd $dest
 
 [ -z "$url" ] && dunstify -u "normal" -t 3000 -a " Downloader" "Nothing to do," "Bailing..." && exit 1
-[ ! $(echo $url | grep -E '\.(com|org|net|in)') ] && dunstify -u "critical" -t 3000 \
-	-a " Downloader" "Invalid Url" && exit 1
+# [ ! $(echo $url | grep -E '\.(com|org|net|in)') ] && dunstify -u "critical" -t 3000 \
+# 	-a " Downloader" "Invalid Url" && exit 1
+[ ! $(echo $url | grep -E '(((http|https):\/\/|www\\.)[a-zA-Z0-9.]*[:]?[a-zA-Z0-9./&%?=_-]*)') ] &&
+		dunstify -u "critical" -t 10000 -a " Downloader" "Invalid Url" && exit 1
 
 [ $(echo $url | grep 'list') ] && 
 	options="Download playlist\nDownload current video\nExtract audio from playlist\nExtract audio from current video" ||

@@ -81,7 +81,7 @@ getVolume(){
 
 #Local current time
 getLocalTime(){
-	echo " $(date "+%B %d  %H:%M:%S")"
+	echo " $(date "+%B %d  %T %Z")"
 }
 
 #Battery Stats
@@ -122,6 +122,6 @@ echo $tx > "$prevTx"
 sp=" • "
 
 while sleep 1s; do
-	xsetroot -name "$(getNetTraffic)$sp$(getBacklight)$sp$(getVolume)$sp$(getBatStats)$sp$(getLocalTime)"
+	xsetroot -name "$(getNetTraffic)$sp$(getBatStats)$sp$(getLocalTime)"
 done
 

@@ -15,22 +15,26 @@ i_pause=" "
 notify(){
 	status=`mpc status`
 	track=`mpc -q current | cut -d "." -f1`
-	$(echo $status | grep -E '\[paused\]' > /dev/null) && status="$i_pause Paused" || 
-		status="$i_play Now Playing"
-	dunstify -u normal -r $notify_id -t 3000 -a "$status" "$track" 
+	if [ -z "$track" ]; then
+		dunstify -u normal -r $notify_id -t 3000 -a "Nothing in Queue," "Bailing..."
+	else
+		$(echo $status | grep -E '\[paused\]' > /dev/null) && status="$i_pause Paused" ||
+			status="$i_play Now Playing"
+		dunstify -u normal -r $notify_id -t 3000 -a "$status" "$track"
+	fi
 }
 
+checkInstance(){
+	[ ! -s "$XDG_CONFIG_HOME/mpd/pid" ] && /usr/bin/mpd &
+}
 
 case $1 in
-	next)
-		mpc -q next
+	toggle|prev|next)
+		$(checkInstance)
+		mpc -q $1
 		$(notify);;
-	prev)
-		mpc -q prev
-		$(notify);;
-	toggle)
-		mpc -q toggle
-		$(notify);;
+	*)
+		dunstify -u normal -r $notify_id -t 3000 -a "Unknown Player Option," "Bailing...";;
 esac
 
 

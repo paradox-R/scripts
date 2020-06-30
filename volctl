@@ -22,23 +22,20 @@ Toggle(){
 notify(){
 	vol=`pamixer --get-volume`
 	#bar=$(seq -s "─" $(($vol / 5)) | sed 's/[0-9]//g')
-	dunstify -u normal -r $notify_id -a "Volume $vol%" -t 3000 " "
+	[ "$vol" -gt 100 ] && vol="$vol% !!" || vol="$vol%"
+	dunstify -u normal -r $notify_id -a "Volume $vol" -t 3000 " "
 }
 
 case $1 in
 	up)
 		#amixer -q set Master +5%
 		pamixer --get-mute > /dev/null && $(Toggle)
-		pamixer -i 5
+		pamixer --allow-boost -i 5
 		$(notify);;
 	down)
 		#amixer -q set Master -5%
 		pamixer --get-mute > /dev/null && $(Toggle)
 		pamixer -d 5
-		$(notify);;
-	boost)
-		pamixer --get-mute > /dev/null && $(Toggle)
-		pamixer --allow-boost -i 5
 		$(notify);;
 	toggle)
 		$(Toggle);;

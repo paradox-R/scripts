@@ -16,9 +16,13 @@ dest=$HOME/Media/Pictures/Screenshots
 [ -e $dest ] || mkdir -p $dest
 cd $dest
 
-[ "$1" = "full" ] && flags='-q 100' || flags='-s -q 100'
+[ "$1" = "full" ] &&
+	scrot -q 100 $filename -e 'dunstify -u "normal" -t 3000 -a "System 💻" "$f\nScreenshot Saved."' ||
+	scrot -l style=dash,width=2 -s -q 100 $filename -e 'dunstify -u "normal" -t 3000 -a "System 💻" "$f\nScreenshot Saved."'
 
 scrot $flags $filename
-[ ! $? -eq 0 ] && dunstify -u "critical" -t 3000 -a "System 💻" "Capture Failed" || 
-	dunstify -u "normal" -t 3000 -a "System  " "$filename" "Screenshot Saved"
+
+[ ! $? -eq 0 ] && dunstify -u "critical" -t 3000 -a "System 💻" "Capture Failed" # ||
+	# dunstify -u "normal" -t 3000 -a "System 💻 " "$filename" "Screenshot Saved"
+
 
