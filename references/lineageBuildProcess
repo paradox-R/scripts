@@ -26,7 +26,7 @@
 	Then either run source from the respective document to update the environment or restart session.
 
 3. Install Build Packages.
-	[run setup/[distroSpecidfic].sh from https://github.com/akhilnarang/scripts.]
+	[run setup/[distroSpecific].sh from https://github.com/akhilnarang/scripts.]
 
 4. Create the directories, Install repo tool and add them to $PATH
 	$ mkdir -p ~/bin
@@ -40,7 +40,7 @@
 
 5. Initialize the LineageOS source repository ensuring the branch name.
 	$ cd ~/android/lineage
-	$ repo init -u https://github.com/LineageOS/android.git -b lineage-17.0
+ 	$ repo init -u https://github.com/LineageOS/android.git -b lineage-17.1
 
 	To start first time download or to kepp the sources up-to-date, run :
 	$ repo sync

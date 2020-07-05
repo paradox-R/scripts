@@ -44,10 +44,10 @@ getNetTraffic(){
 		if [ $interface = "wlo1" ]; then
 			cmd=$(nmcli device wifi list | awk '/^*/ {print "ssid="$3, "signal="$8}')
 			eval $cmd
-			traff="直 $signal%  $out  $in" #▲▼⬆⬇
+			traff=" $out  $in 直 $signal%" #▲▼⬆⬇
 		else
 			ssid=$(nmcli | awk '/connected/ {print $4}')
-			traff=" $ssid  $out  $in"
+			traff=" $out  $in  $ssid"
 		fi
 	else
 		availConn=$(nmcli device wifi list | awk '$7 > 60' | wc -l)

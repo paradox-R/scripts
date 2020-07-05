@@ -1,11 +1,11 @@
 #!/usr/bin/env sh
 
-backupDir="$HOME/pkgs_Bak"
+backupDir="$HOME/.config/pkgs"
 pacPkgs="$backupDir/pacPkgs.bak"
 aurPkgs="$backupDir/aurPkgs.bak"
 
 backup(){
-	[ ! -d "$backupDir" ] && mkdir "$backupDir"
+	[ ! -d "$backupDir" ] && mkdir -p "$backupDir"
 	cd $backupDir
 
 	pacman -Qentq > $pacPkgs
@@ -39,5 +39,4 @@ case $1 in
 		echo -e "Unknown Option...\nBailing..."
 		exit 1;;
 esac
-
 
