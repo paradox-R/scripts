@@ -8,6 +8,7 @@
 #Dependencies - ffmpeg, pulseaudio
 
 dest="$HOME/Library/Videos"
+notif_id=3010
 SIZE="1366x768"
 DEFAULT="-framerate 60 -preset ultrafast -crf 0"
 AUDIO=""
@@ -18,21 +19,31 @@ case $1 in
 	"screenNS")
 		file="ScreenGrab_$(date +%d%m%y_%H%M%S).mp4"
 		VIDEO="-video_size $SIZE -f x11grab -i :0.0"
+		TYPE="Recording Screen with No Audio..."
 		;;
 	"screenS")
 		file="ScreenGrab_$(date +%d%m%y_%H%M%S).mp4"
 		VIDEO="-video_size $SIZE -f x11grab -i :0.0"
 		AUDIO="-f pulse -i default"
+		TYPE="Recording Screen with Audio..."
 		;;
 	"cam")
 		file="Rec_$(date +%d%m%y_%H%M%S).mp4"
 		VIDEO="-i /dev/video0"
 		AUDIO="-f pulse -i default"
+		TYPE="Recording Through Cam..."
 		;;
 	*)
 		exit 1;;
 esac
 
 file="$dest/$file"
+dunstify -u normal -r $notif_id -a "Recorder " -t 3000 "$TYPE"
+
 ffmpeg $VIDEO $AUDIO $DEFAULT $file
+if [ ! $? -eq 0 ] && [ -e $file ]; then
+	dunstify -u normal -r $notif_id -a "Recorder" -t 3000 "Video Saved to Library."
+else
+	dunstify -u critical -r $notif_id -a "Recorder" -t 3000 "Something's Wrong," "Bailing..."
+fi
 
