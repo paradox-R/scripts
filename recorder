@@ -15,25 +15,28 @@ AUDIO=""
 
 [ ! -d "$dest" ] && mkdir -p "$dest"
 cd $dest
-case $1 in
-	"screenNS")
+
+castType=$(echo -e "Camera\nScreen\nScreen with Audio" | dmenu -i -l 5 -p " " | sed -E 's/[ \t]*$//g' )
+case $castType in
+	"Screen")
 		file="ScreenGrab_$(date +%d%m%y_%H%M%S).mp4"
 		VIDEO="-video_size $SIZE -f x11grab -i :0.0"
 		TYPE="Recording Screen with No Audio..."
 		;;
-	"screenS")
+	"Screen with Audio")
 		file="ScreenGrab_$(date +%d%m%y_%H%M%S).mp4"
 		VIDEO="-video_size $SIZE -f x11grab -i :0.0"
 		AUDIO="-f pulse -i default"
 		TYPE="Recording Screen with Audio..."
 		;;
-	"cam")
+	"Camera")
 		file="Rec_$(date +%d%m%y_%H%M%S).mp4"
 		VIDEO="-i /dev/video0"
 		AUDIO="-f pulse -i default"
 		TYPE="Recording Through Cam..."
 		;;
 	*)
+		dunstify -u normal -r $notif_id -a "Recorder" -t 3000 "Bailing..."
 		exit 1;;
 esac
 
