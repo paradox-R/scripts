@@ -33,7 +33,6 @@ case $url in
 	"PrivacyTools")	url="https://privacytools.io";;
 	" Reddit") 	url='https://reddit.com/login';;
 	"縷 RegExr") 	url='https://regexr.com';;
-	"Router")		url='https://192.168.1.1/login.htm';;
 	" Twitter") 	url='https://twitter.com/login';;
 	" YouTube") 	url='https://youtube.com/signin';;
 	*)

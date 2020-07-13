@@ -12,12 +12,12 @@
 #| |_| | (_) \ V  V /| | | | | (_) | (_| | (_| |  __/ |   
 #|____/ \___/ \_/\_/ |_| |_|_|\___/ \__,_|\__,_|\___|_|   
 # 
-#Simple Program to download Video/Audio(s) from Youtube or other such servies.
+#Simple Program to download Video/Audio(s) from Youtube or any other such servies.
 #
 #Dependencies - youtube-dl, dmenu[promptUser], dunst/notify-send
 
-prompt=$HOME/bin/promptUser
-dest=$HOME/Media/YTDownloads
+prompt="$HOME/bin/promptUser"
+dest="$HOME/Library/YTDownloads"
 url=$(xclip -selection primary -o)
 
 [ -e $dest ] || mkdir -p $dest
@@ -38,16 +38,16 @@ format=$(echo -e $options | dmenu -i -l 5 -p "Select a Download Format : " | sed
 case $format in
 	"Extract audio from playlist") 
 		url=$(echo $url | cut -d "&" -f1-2)
-		flags=" -xq --no-warnings --audio-format mp3 --audio-quality 0";;
+		flags=" -xq --no-warnings --audio-format best --audio-quality 0";;
 	"Download playlist") 
 		url=$(echo $url | cut -d "&" -f1-2)
-		flags=" -q --no-warnings --format mp4 --audio-format mp3 --audio-quality 0";;
+		flags=" -q --no-warnings --format best --audio-format best --audio-quality 0";;
 	"Extract audio from video")
 		url=$(echo $url | cut -d "&" -f1)
-		flags=" -xq --no-warnings --audio-format mp3 --audio-quality 0";;
+		flags=" -xq --no-warnings --audio-format best --audio-quality 0";;
 	"Download video") 
 		url=$(echo $url | cut -d "&" -f1)
-		flags=" -q --no-warnings --format mp4 --audio-format mp3 --audio-quality 0";;
+		flags=" -q --no-warnings --format best --audio-format best --audio-quality 0";;
 	*)
 		dunstify -u "normal" -t 3000 -a " Downloader" "Nothing to do," "Bailing..."
 		exit ;;

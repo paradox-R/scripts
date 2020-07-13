@@ -16,7 +16,8 @@ getWeather(){
 		#location="Your,City"
 		#curl -s wttr.in/$location\?format="%l:+%c+%C,+%t,+%w,+%m+%M"
 		#curl -s wttr.in\?format="%l:+%c+%C,+%t,+%w,+%m+%M"
-		report=$(curl -s wttr.in\?format='%l:%c+%C,+%t,+%w,+%m+%M')
+		location="Bengaluru,India"
+		report=$(curl -s wttr.in/$location\?format="%l:+%c+%C,+%t,+%w,+%m+%M")
 		[ -z "$report" ] || $(echo "$report" | grep -iE 'html|Unknown|Sorry|bad' > /dev/null) && 
 			report="Weather Report Unavailable"
 	else

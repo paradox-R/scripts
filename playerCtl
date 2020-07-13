@@ -25,7 +25,7 @@ notify(){
 }
 
 checkInstance(){
-	[ ! -s "$XDG_CONFIG_HOME/mpd/pid" ] && /usr/bin/mpd &
+	[ ! -s "$XDG_CONFIG_HOME/mpd/pid" ] && mpd &
 }
 
 case $1 in

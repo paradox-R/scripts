@@ -9,7 +9,7 @@
 #
 #Dependencies - feh, dunst
 
-dest="$HOME/Media/Pictures"
+dest="$HOME/Library/Pictures"
 flags=" --no-fehbg --bg-scale"
 wall=$dest"/wall"
 

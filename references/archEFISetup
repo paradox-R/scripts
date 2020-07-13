@@ -78,7 +78,7 @@ and network connection respectively.
 	# arch-chroot /mnt
 
 9. Installing certain required packages that are needed to run the system.
-	# pacman -S networkmanager, linux-header, linux-lts, linux-lts-headers, vim, git
+	# pacman -S networkmanager, linux, linux-headers, linux-lts, linux-lts-headers, vim, git
 	lts kernel and its headers are optional.
 
 10. Enable the network manager service
@@ -104,12 +104,12 @@ and network connection respectively.
 		# cd /boot/loaders
 		# vim loader.conf
 			timeout 5 [change the default delay value during boot (in secs)]
-			default arch
+			default arch [name of the entry in entries dir]
 		Save and Exit.
 		
 		# cd entries 
 		Each .conf file in the entries/ is considered an entry for bootloader.
-		There should be an entry for each kernal built and expected to be used 
+		There should be an entry for each kernel built and expected to be used 
 		for the system.
 
 		# vim arch.conf
@@ -124,6 +124,7 @@ and network connection respectively.
 		and encrypted system respectively.
 
 	-using GRUB
+	 [Doesn't accept GPT]
 		# pacman -S grub
 		# grub-install --target=i386-pc /path/to/all/of/Storage
 		
