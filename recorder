@@ -5,48 +5,66 @@
 #| | |  __/ (_| (_) | | | (_| |  __/ |   
 #|_|  \___|\___\___/|_|  \__,_|\___|_|   
 #                                        
-#Dependencies - ffmpeg, pulseaudio
+#Dependencies - ffmpeg, pulseaudio, dunst, dmenu
 
-dest="$HOME/Library/Videos"
+
 notif_id=3010
-SIZE="1366x768"
-DEFAULT="-framerate 60 -preset ultrafast -crf 0"
-AUDIO=""
+record(){
+	dest="$HOME/Library/Videos"
+	SIZE="1366x768"
+	DEFAULT="-framerate 60 -preset ultrafast -crf 0"
+	AUDIO=""
 
-[ ! -d "$dest" ] && mkdir -p "$dest"
-cd $dest
+	[ ! -d "$dest" ] && mkdir -p "$dest"
+	cd $dest
 
-castType=$(echo -e "Camera\nScreen\nScreen with Audio" | dmenu -i -l 5 -p " " | sed -E 's/[ \t]*$//g' )
-case $castType in
-	"Screen")
-		file="ScreenGrab_$(date +%d%m%y_%H%M%S).mp4"
-		VIDEO="-video_size $SIZE -f x11grab -i :0.0"
-		TYPE="Recording Screen with No Audio..."
-		;;
-	"Screen with Audio")
-		file="ScreenGrab_$(date +%d%m%y_%H%M%S).mp4"
-		VIDEO="-video_size $SIZE -f x11grab -i :0.0"
-		AUDIO="-f pulse -i default"
-		TYPE="Recording Screen with Audio..."
-		;;
-	"Camera")
-		file="Rec_$(date +%d%m%y_%H%M%S).mp4"
-		VIDEO="-i /dev/video0"
-		AUDIO="-f pulse -i default"
-		TYPE="Recording Through Cam..."
-		;;
-	*)
-		dunstify -u normal -r $notif_id -a "Recorder" -t 3000 "Bailing..."
-		exit 1;;
-esac
+	castType=$(echo -e "Camera\nScreen\nScreen with Audio" | dmenu -i -l 5 -p " " | sed -E 's/[ \t]*$//g' )
+	case $castType in
+		"Screen")
+			file="ScreenGrab_$(date +%d%m%y_%H%M%S).mp4"
+			VIDEO="-video_size $SIZE -f x11grab -i :0.0"
+			TYPE="Recording Screen with No Audio..."
+			;;
+		"Screen with Audio")
+			file="ScreenGrab_$(date +%d%m%y_%H%M%S).mp4"
+			VIDEO="-video_size $SIZE -f x11grab -i :0.0"
+			AUDIO="-f pulse -i default"
+			TYPE="Recording Screen with Audio..."
+			;;
+		"Camera")
+			file="Rec_$(date +%d%m%y_%H%M%S).mp4"
+			VIDEO="-i /dev/video0"
+			AUDIO="-f pulse -i default"
+			TYPE="Recording Through Cam..."
+			;;
+		*)
+			dunstify -u normal -r $notif_id -a "Recorder" -t 3000 "Bailing..."
+			exit 1;;
+	esac
 
-file="$dest/$file"
-dunstify -u normal -r $notif_id -a "Recorder " -t 3000 "$TYPE"
+	file="$dest/$file"
+	dunstify -u normal -r $notif_id -a "Recorder " -t 3000 "$TYPE"
 
-ffmpeg $VIDEO $AUDIO $DEFAULT $file
-if [ ! $? -eq 0 ] && [ -e $file ]; then
-	dunstify -u normal -r $notif_id -a "Recorder" -t 3000 "Video Saved to Library."
-else
-	dunstify -u critical -r $notif_id -a "Recorder" -t 3000 "Something's Wrong," "Bailing..."
-fi
+	ffmpeg $VIDEO $AUDIO $DEFAULT $file
+	if [ ! $? -eq 0 ] && [ -e $file ]; then
+		dunstify -u normal -r $notif_id -a "Recorder" -t 3000 "Video Saved to Library."
+	else
+		dunstify -u critical -r $notif_id -a "Recorder" -t 3000 "Something's Wrong," "Bailing..."
+	fi
+}
+
+# checkInstance(){
+toggle(){
+	if $(pgrep ffmpeg > /dev/null); then
+		# dunstify -u critical -r $notif_id -a "Recorder" -t 3000 "One Instance of Recorder is already running," "Try again later..."
+		# exit 1
+		killall ffmpeg;
+		exit 0
+	else
+		$(record)
+	fi
+}
+
+# $(checkInstance)
+$(toggle)
 
