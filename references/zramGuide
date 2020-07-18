@@ -1,0 +1,73 @@
+# To setup zram automatically at boot with a single udev rule - 
+
++ Load/ Enable the module - 
+	`modprobe zram` 
+
+	`echo options zram num_devices=<numOfDev> > /etc/modules-load.d/zram.conf`
+						OR
+	`echo zram > /etc/modules-load.d/zram.conf`
+
++ Set max number of compression streams - 
+	The 'max_comp_streams' attribute is set by default.
+	ZRAM always allocates multiple compression streams, one per online CPUs.
+	Value of this attribute can be checked / changed, like so - 
+	`cat /sys/block/zram0/max_comp_streams`
+
++ Select the compression algorithm attribute - 
+	The 'comp_algorithm' attribute allows the user to see the selected compression algorithm.
+	Following command shows all the supported algorithms, with selected one in [],
+	`cat /sys/block/zram0/comp_algorithm`
+	
+	And following to select 'lzo' compression algorithm,
+	`echo lzo > /sys/block/zram0/comp_algorithm`
+
+	NOTE: This cannot be changed once a deice has been initialized.
+
++ Set disk size - 
+	Disk size can be set by writing the value to the attribute 'disksize'.
+	Value can either be plain(implying Bytes) or have memory suffixes[K, M, G].
+	To set the value,
+	`echo 1G > /sys/block/zram0/disksize`
+
+	NOTE: ZRAM of twice the size of memory is recommended, since the compression ratio,
+		of 2:1 is expected. ZRAM uses about 0.1% of  the size of the disk when not in use.
+		So, a huge ZRAM is wasteful.
+
++ Set memory limit[Optional] - 
+	This can be achieved by writing the value into attribute 'mem_limit'. Values can have 
+	suffixes as mentioned above. Use 0 to disable it.
+	`cat /sys/block/zram0/mem_limit`
+
++ Activate the blocks - 
+	`mkswap /dev/zram0`
+	`swapon /dev/zram0`
+	These blocks can be formatted with some other fs and used as /tmp by mounting on the same.
+
++ Adding or Removing a ZRAM device - 
+	In order to add a new /dev/zramX device, perform a read operation on the hot_add attribute. 
+	This will return either the new device’s device id (meaning that you can use /dev/zram<id>) 
+	or an error code.
+	`cat /sys/class/zram-control/hot_add`
+
+	To remove an existing device /dev/zramX,
+	`echo X > /sys/class/zram-control/hot_remove`
+
++ Deactivate - 
+	To deactivate, `swapoff` can be run on swap blocks and /tmp mounts can be unmounted.[umount]
+
++ Reset - 
+	Writing any positive value to 'reset' attribute, resets the block.
+	`echo 1 > /sys/block/zram1/reset`
+
+NOTE: All the above attributes are sysfs nodes.
+
+## Auto mounting ZRAM dev as swap on reboot 
+
++ Create a udev rule in `etc/udev/rules.d/99-zram.rules` - 
+	KERNEL=="zram0", ATTR{disksize}="512M" RUN="/usr/bin/mkswap /dev/zram0", TAG+="systemd"
+	KERNEL=="zram1", ATTR{disksize}="512M" RUN="/usr/bin/mkswap /dev/zram1", TAG+="systemd"
+
++ Add /dev/zram to fstab - 
+	/dev/zram0 none swap defaults 0 0
+	/dev/zram1 none swap defaults 0 0
+

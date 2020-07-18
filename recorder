@@ -56,8 +56,6 @@ record(){
 # checkInstance(){
 toggle(){
 	if $(pgrep ffmpeg > /dev/null); then
-		# dunstify -u critical -r $notif_id -a "Recorder" -t 3000 "One Instance of Recorder is already running," "Try again later..."
-		# exit 1
 		killall ffmpeg;
 		exit 0
 	else

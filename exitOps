@@ -1,11 +1,9 @@
 #!/usr/bin/env sh
-#
 # _____      _ _   
 #| ____|_  _(_) |_ 
 #|  _| \ \/ / | __|
 #| |___ >  <| | |_ 
 #|_____/_/\_\_|\__|
-#                  
 #  ___                       _   _                 
 # / _ \ _ __   ___ _ __ __ _| |_(_) ___  _ __  ___ 
 #| | | | '_ \ / _ \ '__/ _` | __| |/ _ \| '_ \/ __|
@@ -13,16 +11,17 @@
 # \___/| .__/ \___|_|  \__,_|\__|_|\___/|_| |_|___/
 #      |_|                                         
 #
-#Dependencies - dmenu[promptUser]
+#Dependencies - dmenu[promptUser], slock
 
 prompt=$HOME/bin/promptUser
-operation=$(echo -e " Logout\n Reboot\n Shutdown\n Suspend" | dmenu -i -l 5 -p "" | sed -E 's/$[ \t]*//g')
+operation=$(echo -e " Lock Screen\n Logout\n Reboot\n Shutdown" | 
+	dmenu -i -l 5 | sed -E 's/$[ \t]*//g')
 
 [ -z "$operation" ] && exit 1
 
 case $operation in
 	" Logout") 
-		$prompt " Logout?"
+		$prompt " Exit Current Session?"
 		[ $? -eq 0 ] && $(pkill -kill -u $USER);;
 	" Reboot") 
 		$prompt " Reboot System?"
@@ -33,5 +32,10 @@ case $operation in
 	" Suspend")
 		$prompt " Suspend All Operations?"
 		[ $? -eq 0 ] && $(systemctl suspend);;
+	" Lock Screen")
+		$prompt " Suspend All Operations?"
+		[ $? -eq 0 ] && $(slock & systemctl suspend);;
+	*)
+		exit 1;;
 esac
 
