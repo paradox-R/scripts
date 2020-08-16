@@ -7,9 +7,9 @@
 #
 #Dependencies - curl, dunst                   
 
-notify_id=3004
+NOTIFY_ID=3004
 
-getWeather(){
+GetWeather(){
 	if $(ping -qc 1 1.1 > /dev/null); then
 		#wttr.in->>l=location, c=weather condition, C=wether condition text,
 		#t=Temp, w=wind dir and speed, m=moonphase, M=moonday, p=precipitation,
@@ -26,19 +26,19 @@ getWeather(){
 	echo $report
 }
 
-notify(){
+Notify(){
 	while true; do
-		weather=$(getWeather)
+		weather=$(GetWeather)
 		loc=`echo $weather | cut -d ":" -f1`
 		weather=`echo $weather | cut -d ":" -f2`
 		if $(echo $weather | grep "Unavailable" > /dev/null); then
 			sleep 1m
 		else
-			dunstify -u normal -r $notify_id -t 5000 -a "Weather Report" "$loc" "$weather"
+			dunstify -u normal -r $NOTIFY_ID -t 5000 -a "Weather Report" "$loc" "$weather"
 			sleep 30m
 		fi
 	done
 }
 
-$(notify)
+$(Notify)
 

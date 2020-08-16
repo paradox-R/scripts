@@ -1,5 +1,5 @@
 # To setup zram automatically at boot with a single udev rule - 
-
+	[https://www.kernel.org/doc/html/latest/admin-guide/blockdev/zram.html]
 + Load/ Enable the module - 
 	`modprobe zram` 
 

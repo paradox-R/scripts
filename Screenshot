@@ -8,17 +8,16 @@
 #                                                      
 #Dependencies -> maim, dunst, notify-send
 
-dest="$HOME/Library/Pictures/Screenshots"
-filename="Screenshot_$(date +%Y%m%d_%H%M%S).png"  
-file="$dest/$filename"
+DEST="$HOME/Library/Pictures/Screenshots"
+FILENAME="Screenshot_$(date +%Y%m%d_%H%M%S).png"  
+FILE="$DEST/$FILENAME"
 
-[ -e "$dest" ] || mkdir -p "$dest"
+[ -e "$DEST" ] || mkdir -p "$DEST"
 
-[ "$1" = "full" ] && flags="-Bum 1 " ||
-	flags="-Bsum 1 "
+[ "$1" = "full" ] && FLAGS="-Bum 1 " || FLAGS="-Bsum 1 "
 
-maim $flags "$file" 
+maim $FLAGS "$FILE" 
 
 [ ! $? -eq 0 ] && dunstify -u "critical" -t 3000 -a "System 💻" "Capture Failed" ||
-	 dunstify -u "normal" -t 3000 -a "System 💻 " "$filename" "Screenshot Saved"
+	 dunstify -u "normal" -t 3000 -a "System 💻 " "$FILENAME" "Screenshot Saved"
 

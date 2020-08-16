@@ -7,36 +7,36 @@
 #                          
 #Dependencies - pulseAudio, dunst
 
-notify_id=3000
-i_mute=" 婢"
-i_unmute=" 墳"
+NOTIFY_ID=3000
+i_MUTE=" 婢"
+i_UNMUTE=" 墳"
 
 Toggle(){
 	#toggle between mute and unmute
 	#amixer -q set Master toggle
 	pamixer -t
 	toggle=`$(pamixer --get-mute) > /dev/null && echo "Muted" || echo "Unmuted"`
-	dunstify -u normal -r $notify_id -a "Speakers $toggle" -t 3000 " "
+	dunstify -u normal -r $NOTIFY_ID -a "Speakers $toggle" -t 3000 " "
 }
 
-notify(){
+Notify(){
 	vol=`pamixer --get-volume`
 	#bar=$(seq -s "─" $(($vol / 5)) | sed 's/[0-9]//g')
 	[ "$vol" -gt 100 ] && vol="$vol% !!" || vol="$vol%"
-	dunstify -u normal -r $notify_id -a "Volume $vol" -t 3000 " "
+	dunstify -u normal -r $NOTIFY_ID -a "Volume $vol" -t 3000 " "
 }
 
 case $1 in
 	up)
 		#amixer -q set Master +5%
 		pamixer --get-mute > /dev/null && $(Toggle)
-		pamixer --allow-boost -i 5
-		$(notify);;
+		pamixer --allow-boost -i 10
+		$(Notify);;
 	down)
 		#amixer -q set Master -5%
 		pamixer --get-mute > /dev/null && $(Toggle)
-		pamixer -d 5
-		$(notify);;
+		pamixer --allow-boost -d 10
+		$(Notify);;
 	toggle)
 		$(Toggle);;
 esac

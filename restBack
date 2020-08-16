@@ -1,30 +1,30 @@
 #!/usr/bin/env sh
 
-backupDir="$HOME/.config/pkgs"
-pacPkgs="$backupDir/pacPkgs.bak"
-aurPkgs="$backupDir/aurPkgs.bak"
+BACKUPDIR="$HOME/.config/pkgs"
+PACPKGS="$BACKUPDIR/pacPkgs.bak"
+AURPKGS="$BACKUPDIR/aurPkgs.bak"
 
 backup(){
-	[ ! -d "$backupDir" ] && mkdir -p "$backupDir"
-	cd $backupDir
+	[ ! -d "$BACKUPDIR" ] && mkdir -p "$BACKUPDIR"
+	cd $BACKUPDIR
 
-	pacman -Qentq > $pacPkgs
-	pacman -Qemtq > $aurPkgs
+	pacman -Qentq > $PACPKGS
+	pacman -Qemtq > $AURPKGS
 }
 
 restore(){
 	[ "$(ping -c1 1.1)" > /dev/null ] || exit 1
-	[ ! -d "$backupDir" ] && exit 1
+	[ ! -d "$BACKUPDIR" ] && exit 1
 
-	[ -e "$pacPkgs" ] && sudo pacman -S --needed - < $pacPkgs
+	[ -e "$PACPKGS" ] && sudo pacman -S --needed - < $PACPKGS
 
-	if [ -e "$aurPkgs" ]; then
-		[ "$(pacman -Qs yay)" > /dev/null ] || $(instlHelper)
-		[ "$?" -eq 0 ] && yay -S --needed < $aurPkgs
+	if [ -e "$AURPKGS" ]; then
+		[ "$(pacman -Qs yay)" > /dev/null ] || $(InstlHelper)
+		[ "$?" -eq 0 ] && yay -S --needed < $AURPKGS
 	fi
 }
 
-instlHelper(){
+InstlHelper(){
 	sudo pacman -Syu git base-devel
 	git clone https://aur.archlinux.org/yay.git
 	cd yay

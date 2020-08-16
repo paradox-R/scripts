@@ -14,53 +14,51 @@
 # 
 #Simple Program to download Video/Audio(s) from Youtube or any other such servies.
 #
-#Dependencies - youtube-dl, dmenu[promptUser], dunst/notify-send
+#Dependencies - youtube-dl, dunst/notify-send
 
-prompt="$HOME/bin/promptUser"
-dest="$HOME/Library/YTDownloads"
-url=$(xclip -selection primary -o)
+DEST="$HOME/Library/YTDownloads"
+URL=$(xclip -selection primary -o)
 
-[ -e $dest ] || mkdir -p $dest
-cd $dest
+[ -e $DEST ] || mkdir -p $DEST
+cd $DEST
 
-[ -z "$url" ] && dunstify -u "normal" -t 3000 -a " Downloader" "Nothing to do," "Bailing..." && exit 1
-# [ ! $(echo $url | grep -E '\.(com|org|net|in)') ] && dunstify -u "critical" -t 3000 \
+[ -z "$URL" ] && dunstify -u "normal" -t 3000 -a " Downloader" "Nothing to do," "Bailing..." && exit 1
+# [ ! $(echo $URL | grep -E '\.(com|org|net|in)') ] && dunstify -u "critical" -t 3000 \
 # 	-a " Downloader" "Invalid Url" && exit 1
-[ ! $(echo $url | grep -E '(((http|https):\/\/|www\\.)[a-zA-Z0-9.]*[:]?[a-zA-Z0-9./&%?=_-]*)') ] &&
+[ ! $(echo $URL | grep -E '(((http|https):\/\/|www\\.)[a-zA-Z0-9.]*[:]?[a-zA-Z0-9./&%?=_-]*)') ] &&
 		dunstify -u "critical" -t 10000 -a " Downloader" "Invalid Url" && exit 1
 
-[ $(echo $url | grep 'list') ] && 
-	options="Download playlist\nDownload current video\nExtract audio from playlist\nExtract audio from current video" ||
-	options="Download video\nExtract audio from video" 
+[ $(echo $URL | grep 'list') ] && 
+	OPTS="Download playlist\nDownload current video\nExtract audio from playlist\nExtract audio from current video" ||
+	OPTS="Download video\nExtract audio from video" 
 
-format=$(echo -e $options | dmenu -i -l 5 -p "Select a Download Format : " | sed -E 's/[ \t]*$//g')
-
+format=$(echo -e $OPTS | dmenu -i -l 5 -p "Select a Download Format : " | sed -E 's/[ \t]*$//g')
 case $format in
 	"Extract audio from playlist") 
-		url=$(echo $url | cut -d "&" -f1-2)
-		flags=" -xq --no-warnings --audio-format best --audio-quality 0";;
+		URL=$(echo $URL | cut -d "&" -f1-2)
+		FLAGS=" -xq --no-warnings --audio-format best --audio-quality 0";;
 	"Download playlist") 
-		url=$(echo $url | cut -d "&" -f1-2)
-		flags=" -q --no-warnings --format best --audio-format best --audio-quality 0";;
+		URL=$(echo $URL | cut -d "&" -f1-2)
+		FLAGS=" -q --no-warnings --format best --audio-format best --audio-quality 0";;
 	"Extract audio from video")
-		url=$(echo $url | cut -d "&" -f1)
-		flags=" -xq --no-warnings --audio-format best --audio-quality 0";;
-	"Download video") 
-		url=$(echo $url | cut -d "&" -f1)
-		flags=" -q --no-warnings --format best --audio-format best --audio-quality 0";;
+		URL=$(echo $URL | cut -d "&" -f1)
+		FLAGS=" -xq --no-warnings --audio-format best --audio-quality 0";;
+	"Download current video") 
+		URL=$(echo $URL | cut -d "&" -f1)
+		FLAGS=" -q --no-warnings --format best --audio-format best --audio-quality 0";;
 	*)
 		dunstify -u "normal" -t 3000 -a " Downloader" "Nothing to do," "Bailing..."
 		exit ;;
 esac
 
-title=$(youtube-dl --get-title $url)
+TITLE=$(youtube-dl --get-TITLE $URL)
 
-[ -z "$title" ] && dunstify -u "critical" -t 3000 -a " Downloader" "Something's Wrong," "Bailing..." && 
+[ -z "$TITLE" ] && dunstify -u "critical" -t 3000 -a " Downloader" "Something's Wrong," "Bailing..." && 
 	exit 1
 
-dunstify -u "normal" -t 3000 -a " Downloader" "$title" "Download Started"
+dunstify -u "normal" -t 3000 -a " Downloader" "$TITLE" "Download Started"
 
-youtube-dl $flags $url
-[ $? -eq 0 ] && dunstify -u "normal" -t 3000 -a " Downloader" "$title" "Download Complete" || 
-	dunstify -u "critical" -t 3000 -a "  Downloader" "$title" "Download Failed"
+youtube-dl $FLAGS $URL
+[ $? -eq 0 ] && dunstify -u "normal" -t 3000 -a " Downloader" "$TITLE" "Download Complete" || 
+	dunstify -u "critical" -t 3000 -a "  Downloader" "$TITLE" "Download Failed"
 

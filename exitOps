@@ -13,28 +13,28 @@
 #
 #Dependencies - dmenu[promptUser], slock
 
-prompt=$HOME/bin/promptUser
-operation=$(echo -e " Lock Screen\n Logout\n Reboot\n Shutdown" | 
+PROMPT=$HOME/bin/promptUser
+OPERATION=$(echo -e " Lock Screen\n Suspend\n Logout\n Reboot\n Shutdown" | 
 	dmenu -i -l 5 | sed -E 's/$[ \t]*//g')
 
-[ -z "$operation" ] && exit 1
+[ -z "$OPERATION" ] && exit 1
 
-case $operation in
+case $OPERATION in
 	" Logout") 
-		$prompt " Exit Current Session?"
-		[ $? -eq 0 ] && $(pkill -kill -u $USER);;
+		$PROMPT " Exit Current Session?"
+		[ $? -eq 0 ] && pkill -kill -u $USER;;
 	" Reboot") 
-		$prompt " Reboot System?"
-		[ $? -eq 0 ] && $(reboot);;
+		$PROMPT " Reboot System?"
+		[ $? -eq 0 ] && reboot;;
 	" Shutdown")
-		$prompt " ShutDown Now?"
-		[ $? -eq 0 ] && $(shutdown now);;
+		$PROMPT " ShutDown Now?"
+		[ $? -eq 0 ] && shutdown now;;
 	" Suspend")
-		$prompt " Suspend All Operations?"
-		[ $? -eq 0 ] && $(systemctl suspend);;
+		$PROMPT " Suspend All Operations?"
+		[ $? -eq 0 ] && sleep 0.25s; slock & systemctl suspend;;
 	" Lock Screen")
-		$prompt " Suspend All Operations?"
-		[ $? -eq 0 ] && $(slock & systemctl suspend);;
+		$PROMPT " Suspend All Operations?"
+		[ $? -eq 0 ] && sleep 0.25s; slock;;
 	*)
 		exit 1;;
 esac

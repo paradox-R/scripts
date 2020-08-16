@@ -124,9 +124,9 @@ and network connection respectively.
 		and encrypted system respectively.
 
 	-using GRUB
-	 [Doesn't accept GPT]
 		# pacman -S grub
-		# grub-install --target=i386-pc /path/to/all/of/Storage
+		# grub-install --target=i386-pc /path/to/all/of/Storage [Legacy Boot]
+		# grub-install --target=x86_64 --efi-directory=/boot --recheck /path/to/storage
 		
 		If using an encrypted storage block, following steps need to be followed.
 		# vim /etc/default/grub

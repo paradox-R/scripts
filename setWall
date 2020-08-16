@@ -9,14 +9,14 @@
 #
 #Dependencies - feh, dunst
 
-dest="$HOME/Library/Pictures"
-flags=" --no-fehbg --bg-scale"
-wall=$dest"/wall"
+DEST="$HOME/Library/Pictures"
+FLAGS=" --no-fehbg --bg-scale"
+WALL=$DEST"/wall"
 
-[ -e $dest ] || mkdir -p $dest
+[ -e $DEST ] || mkdir -p $DEST
 
-cp "$1" $wall
+cp "$1" $WALL
 
-feh $flags $wall
+feh $FLAGS $WALL
 [ $? -eq 0 ] && dunstify -u normal -t 3000 -a "System 💻" "Wallpaper Changed"
 

@@ -8,48 +8,47 @@
 #Dependencies - ffmpeg, pulseaudio, dunst, dmenu
 
 
-notif_id=3010
-record(){
-	dest="$HOME/Library/Videos"
+NOTIFY_ID=3000
+Record(){
+	DEST="$HOME/Library/Videos"
 	SIZE="1366x768"
 	DEFAULT="-framerate 60 -preset ultrafast -crf 0"
-	AUDIO=""
 
-	[ ! -d "$dest" ] && mkdir -p "$dest"
-	cd $dest
+	[ ! -d "$DEST" ] && mkdir -p "$DEST"
+	cd $DEST
 
 	castType=$(echo -e "Camera\nScreen\nScreen with Audio" | dmenu -i -l 5 -p " " | sed -E 's/[ \t]*$//g' )
 	case $castType in
 		"Screen")
-			file="ScreenGrab_$(date +%d%m%y_%H%M%S).mp4"
-			VIDEO="-video_size $SIZE -f x11grab -i :0.0"
-			TYPE="Recording Screen with No Audio..."
+			FILE="ScreenGrab_$(date +%d%m%y_%H%M%S).mp4"
+			VIDEO="-video_size $SIZE -f x11grab -i $DISPLAY"
+			TYPE="Recording Screen..."
 			;;
 		"Screen with Audio")
-			file="ScreenGrab_$(date +%d%m%y_%H%M%S).mp4"
-			VIDEO="-video_size $SIZE -f x11grab -i :0.0"
+			FILE="ScreenGrab_$(date +%d%m%y_%H%M%S).mp4"
+			VIDEO="-video_size $SIZE -f x11grab -i $DISPLAY"
 			AUDIO="-f pulse -i default"
 			TYPE="Recording Screen with Audio..."
 			;;
 		"Camera")
-			file="Rec_$(date +%d%m%y_%H%M%S).mp4"
+			FILE="Rec_$(date +%d%m%y_%H%M%S).mp4"
 			VIDEO="-i /dev/video0"
 			AUDIO="-f pulse -i default"
 			TYPE="Recording Through Cam..."
 			;;
 		*)
-			dunstify -u normal -r $notif_id -a "Recorder" -t 3000 "Bailing..."
+			dunstify -u normal -r $NOTIFY_ID -a "Recorder" -t 3000 "Bailing..."
 			exit 1;;
 	esac
 
-	file="$dest/$file"
-	dunstify -u normal -r $notif_id -a "Recorder " -t 3000 "$TYPE"
+	FILE="$DEST/$FILE"
+	dunstify -u normal -r $NOTIFY_ID -a "Recorder " -t 3000 "$TYPE"
 
-	ffmpeg $VIDEO $AUDIO $DEFAULT $file
-	if [ ! $? -eq 0 ] && [ -e $file ]; then
-		dunstify -u normal -r $notif_id -a "Recorder" -t 3000 "Video Saved to Library."
+	ffmpeg $VIDEO $AUDIO $DEFAULT $FILE
+	if [ ! $? -eq 0 ] && [ -e $FILE ]; then
+		dunstify -u normal -r $NOTIFY_ID -a "Recorder" -t 3000 "Video Saved to Library."
 	else
-		dunstify -u critical -r $notif_id -a "Recorder" -t 3000 "Something's Wrong," "Bailing..."
+		dunstify -u critical -r $NOTIFY_ID -a "Recorder" -t 3000 "Something's Wrong," "Bailing..."
 	fi
 }
 
@@ -59,7 +58,7 @@ toggle(){
 		killall ffmpeg;
 		exit 0
 	else
-		$(record)
+		$(Record)
 	fi
 }
 

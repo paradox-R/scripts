@@ -7,21 +7,21 @@
 #
 #Dependencies - xbacklight, dunst               
 
-notify_id=3001
+NOTIFY_ID=3000
 
-notify(){
+Notify(){
 	brite=`xbacklight -get`
 	brite=${brite%.*}
 	#bar=$(seq -s "─" $(($brite / 5)) | sed 's/[0-9]//g')
-	dunstify -u normal -r $notify_id -a "Brightness $brite%" -t 3000 " "
+	dunstify -u normal -r $NOTIFY_ID -a "Brightness $brite%" -t 3000 " "
 }
 
 case $1 in 
 	up)
 		xbacklight -inc 5
-		$(notify);;
+		$(Notify);;
 	down)
 		xbacklight -dec 5
-		$(notify);;
+		$(Notify);;
 esac
 
