@@ -9,7 +9,8 @@
 
 
 NOTIFY_ID=3000
-Record(){
+PIDFILE=$XDG_CACHE_HOME"/recorderPID"
+record(){
 	DEST="$HOME/Library/Videos"
 	SIZE="1366x768"
 	DEFAULT="-framerate 60 -preset ultrafast -crf 0"
@@ -37,10 +38,11 @@ Record(){
 			TYPE="Recording Through Cam..."
 			;;
 		*)
-			dunstify -u normal -r $NOTIFY_ID -a "Recorder" -t 3000 "Bailing..."
+			dunstify -u normal -r $NOTIFY_ID -a "Recorder" -t 3000 "Nothing to do..."
 			exit 1;;
 	esac
 
+	echo $$ > $PIDFILE
 	FILE="$DEST/$FILE"
 	dunstify -u normal -r $NOTIFY_ID -a "Recorder " -t 3000 "$TYPE"
 
@@ -52,16 +54,17 @@ Record(){
 	fi
 }
 
-# checkInstance(){
 toggle(){
-	if $(pgrep ffmpeg > /dev/null); then
-		killall ffmpeg;
+	if [ -f $PIDFILE ]; then
+		# kill -15 $(cat $PIDFILE)
+		kill -15 $(pgrep ffmpeg)
+		rm -f $PIDFILE
 		exit 0
 	else
-		$(Record)
+		killall ffmpeg
+		record
 	fi
 }
 
-# $(checkInstance)
-$(toggle)
+toggle
 

@@ -12,7 +12,7 @@ NOTIFY_ID=3000
 i_PLAY=" 契"
 i_PAUSE=" "
 
-Notify(){
+notify(){
 	status=`mpc status`
 	# track=`mpc -q current | cut -d "." -f1`
 	if [ -z "$status" ]; then
@@ -24,18 +24,18 @@ Notify(){
 	fi
 }
 
-CheckInstance(){
+check_instance(){
 	# [ ! -s "$XDG_CONFIG_HOME/mpd/pid" ] && mpd &
 	pgrep mpd > /dev/null || mpd &
 }
 
 case $1 in
 	toggle|prev|next)
-		$(CheckInstance)
+		check_instance
 		mpc -q $1
-		$(Notify);;
+		notify;;
 	*)
-		dunstify -u normal -r $NOTIFY_ID -t 3000 -a "Unknown Player Option," "Bailing...";;
+		dunstify -u normal -r $NOTIFY_ID -t 3000 -a "Unknown Option," "Bailing...";;
 esac
 
 

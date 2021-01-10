@@ -11,6 +11,6 @@
 #
 #Dependencies -> dmenu.
 
-response=$(echo -e " Yes\n No" | dmenu -i -p "$1" -l 2)
-[ "$response" = " Yes" ] && $2  
+RESPONSE=$(echo -e " Yes\n No" | dmenu -i -p "$1" -l 2)
+[ "$RESPONSE" = " Yes" ] && $2  
 

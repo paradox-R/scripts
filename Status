@@ -11,14 +11,14 @@
 #Dependencies -> nmcli 
 
 #Get the connectivity params
-getConnectionParams(){
+get_conn_params(){
 	interface=`ip route |grep -oPm1 '(?<=dev )[^ ]+'`
 	rx=`cat /sys/class/net/$interface/statistics/rx_bytes`
 	tx=`cat /sys/class/net/$interface/statistics/tx_bytes`
 }
 
 #Calculate Connection Speeds
-calcSpeeds(){
+calc_speeds(){
 	vel=$(($1 - $2))
 	#vel=${vel#-}
 	if [ "$vel" -ge 1000000 ]; then
@@ -34,11 +34,11 @@ calcSpeeds(){
 }
 
 #Connection Details
-getNetTraffic(){
+get_net_traffic(){
 	if [ ! -z "$(ip route)" ]; then
-		getConnectionParams
-		in=$(calcSpeeds $rx $(cat "$prevRx"))
-		out=$(calcSpeeds $tx $(cat "$prevTx"))
+		get_conn_params
+		in=$(calc_speeds $rx $(cat "$prevRx"))
+		out=$(calc_speeds $tx $(cat "$prevTx"))
 		echo $rx > "$prevRx"
 		echo $tx > "$prevTx"
 		if [ $interface = "wlo1" ]; then
@@ -57,14 +57,14 @@ getNetTraffic(){
 }
 
 #Get Brightness
-getBacklight(){
-	bcklit=`xbacklight -get`
-	bcklit=${bcklit%.*}
-	[ "$bcklit" -le 50 ] && echo "🔅" || echo "🔆"
+get_bcklt(){
+	bcklt=`xbacklight -get`
+	bcklt=${bcklit%.*}
+	[ "$bcklt" -le 50 ] && echo "🔅" || echo "🔆"
 }
 
 #Volume Params
-getVolume(){
+get_vol(){
 	vol=`pamixer --get-volume-human`
 	$( echo "$vol" | grep "%" > /dev/null ) && vol=$(echo "$vol" | tr -d "%")
 	if [ "$vol" -gt 0 ] && [ "$vol" -le 33 ]; then
@@ -80,12 +80,13 @@ getVolume(){
 }
 
 #Local current time
-getLocalTime(){
-	echo " $(date "+%B %d  %T %Z")"
+get_lcl_time(){
+	# echo " $(date "+%B %d  %T %Z")"
+	echo " $(date "+%B %d  %T ")"
 }
 
 #Battery Stats
-getBatStats(){
+get_bat_stats(){
 	batStatus=`cat /sys/class/power_supply/BAT0/status`
 	if [ "$batStatus" = "Full" ]; then
 		bat="   100"
@@ -122,6 +123,6 @@ echo $tx > "$prevTx"
 sp=" • "
 
 while sleep 1s; do
-	xsetroot -name "$(getNetTraffic)$sp$(getBatStats)$sp$(getLocalTime)"
+	xsetroot -name "$(get_net_traffic)$sp$(get_bat_stats)$sp$(get_lcl_time)"
 done
 

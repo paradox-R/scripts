@@ -12,7 +12,7 @@
 |___|_| |_|___/\__\__,_|_|_| | ||_____|_|   |___| |___/\___|\__|\__,_| .__/| |
                               \_\                                    |_|  /_/ 
 ==============================================================================
-Tools like lsblk, ping can be used to determince the status, name of storage block 
+Tools like lsblk, ping can be used to determine the status, name of storage block 
 and network connection respectively.
 
 1. Sync NetworkTime.
@@ -21,7 +21,9 @@ and network connection respectively.
 2. Partitioning the drives.
 	While multiple partitioning tools fdisk, cfdisk gdisk are available, gdisk 
 	is preferred.
+	
 	# gdisk /disk/to/be/partitioned
+
 	Ops - o, n, w	
 	Preferred hexes -
 		EF00 - EFI system [system doesn't accept other setup under GPT label]
@@ -29,20 +31,26 @@ and network connection respectively.
 		8300 - Linux System [home,root etc. partitions]
 
 3. Drive Encryption [if needed]
+	
 	# cryptsetup -y -v luksformat /block/to/be/encrypted
+	
 	Run the above command, choose and verify a password for the encryption.
 	
 	# cryptsetup open /encrypted/block [referenceName]
+	
 	User will be prompted for password.
 
 	# pvcreate /dev/mapper/[referenceName]
+	
 	Create a physical Volume spanning over the entire encrypted Volume.
 
 	# vgcreate [volGroupName] /dev/mapper/[referenceName]
+	
 	Create a Volume Group that'll hold all the logical volumes to come.
 
 	# lvcreate -l [spaceTobeAllocated] [volGroupName] -n [volName]
 	# lvcreate -L [volGroupName] -n [volName]
+	
 	lvcreate can be used as partitioning tool for an encrypted storage block.
 	-l flag, allocates the disk space to be used for the volume [%].
 	-L flag, allocates the disk space to be used for the volume [in M,G etc].
@@ -55,15 +63,14 @@ and network connection respectively.
 	# mkfs.vfat [/path/to/boot]
 	
 	# mkfs.[fsOfChoice] /partitionName 
-	partitionName can be that of an encrypted or regular block.
 
 	# mkswap /path/to/swap
 	# swapon /path/to/swap
-	Swap if needed.
+	[Swap if needed.]
 
 5. Mounting the device block on respective mount points for the installation.
 	# mount /path/to/root /mnt
-	# mkdir /mnt/home		[if home partition exists]
+	# mkdir /mnt/home				[if home partition exists]
 	# mount /path/to/home /mnt/home	[if home partition exists]
 	# mkdir /mnt/boot
 	# mount /path/to/boot /mnt/boot
@@ -78,7 +85,7 @@ and network connection respectively.
 	# arch-chroot /mnt
 
 9. Installing certain required packages that are needed to run the system.
-	# pacman -S networkmanager, linux, linux-headers, linux-lts, linux-lts-headers, vim, git
+	# pacman -S networkmanager linux linux-headers linux-lts linux-lts-headers vim git
 	lts kernel and its headers are optional.
 
 10. Enable the network manager service
@@ -86,6 +93,7 @@ and network connection respectively.
 
 11. Adding hooks for encryption to be handles at startup
 	# vim /etc/mkinitcpio.conf
+
 	Add the hooks 'encrypt' and 'lvm2' between hooks 'block' and 'filesystems'.
 	A must for the system to look for storage blocks to be decrypted on startup, else 
 	the blocks won't be decrypted.
@@ -93,18 +101,18 @@ and network connection respectively.
 
 12. Create init files against newly created hooks.
 	# mkinitcpio -p [kernelName]
+	
 	The above command has to be run multiple times against all the installed kernels. 
 	[linux, linux-lts etc]
 
 13. Bootloader [user can choose between bootctl or grub]
-	-using BOOTCTL
+	-using systemd-boot
 		# bootctl install
-		systemd's bootmanager
 		
 		# cd /boot/loaders
 		# vim loader.conf
-			timeout 5 [change the default delay value during boot (in secs)]
-			default arch [name of the entry in entries dir]
+			timeout 5			[change the default delay value during boot (in secs)]
+			default arch		[name of the entry in entries dir]
 		Save and Exit.
 		
 		# cd entries 
@@ -113,22 +121,25 @@ and network connection respectively.
 		for the system.
 
 		# vim arch.conf
-			title   [name]
-			linux   [kernalImageName]
-			initrd 	[initramfsImageName]
-			options root=UUID=[UUIDofRootBlock]
+			title   bootEntryName
+			linux   kernalImageName
+			initrd 	cpu_manufacturer-ucode.img
+			initrd 	initramfs.img
+			options root=UUID=UUIDofRoot
 					OR
-			options rw cryptdevice=UUID=[UUIDOfEncryptedBlock]:[volGroupName] root=UUID=[UUIDofRootBlock]
+			options rw cryptdevice=UUID=UUIDOfEncryptedBlock:volGroupName root=UUID=UUIDofRoot
+
 		Save and Exit.
 		Fourth and fifth lines are not be used together but are rather for unencrypted 
 		and encrypted system respectively.
 
 	-using GRUB
 		# pacman -S grub
-		# grub-install --target=i386-pc /path/to/all/of/Storage [Legacy Boot]
-		# grub-install --target=x86_64 --efi-directory=/boot --recheck /path/to/storage
+		# grub-install --target=i386-pc /path/to/all/of/Storage							-->[Legacy Boot]
+		# grub-install --target=x86_64 --efi-directory=/boot --recheck /path/to/storage -->[UEFI]
 		
 		If using an encrypted storage block, following steps need to be followed.
+
 		# vim /etc/default/grub
 			add 'cryptdevice=UUID=[UUIDofENcryptedBlock]:[volGroupName]' to 'grub_cmdline_linux_default' line.
 
@@ -136,24 +147,27 @@ and network connection respectively.
 
 14. Set the locale info.
 	# vim /etc/locale.gen
+
 	Uncomment the line corresponding to your locale, Save and exit.
 	
 	# locale-gen
 
 15. Set the localtime 
-	# ln -Sf /usr/share/zoneinfo/[region]/[city] /etc/localtime
+	# ln -sf /usr/share/zoneinfo/[region]/[city] /etc/localtime
 
 16. Set hostname if required.
 	# hostnamectl set-hostname [hostName]
 
 17. Setting password for the root and finishing the install.
 	# passwd
-	# exit 			->exits chroot
+	Exit out of chroot Environment.
+	# exit
 	# umount -R /mnt
 	# reboot
 
 18. Post-Installation
 	# useradd -m -G wheel -S [defaultShell] [userName]
+	
 	-m creates a home dir for the user being created, 
 	-G adds the user to wheel group, 
 	-S assigns a default shell if needed.
@@ -165,13 +179,18 @@ and network connection respectively.
 			OR
 	pacman -S [desired DE groups]
 
-
-
-
-**IMPORTANT**-
+** IMPORTANT **-
 Troubleshooting
 
 1. # ln -s /etc/fonts/conf.avail/10-scale-bitmap-fonts.conf /etc/fonts/conf.d/
+	
 	Certain bitmap fonts[ e.g. noto-fonts-emoji] in fontconfig don't rescale.
 	Might affect dunst and other applications, create the above link and restart the application.
-2. Graphics drivers - mesa, xf86-video-intel vulkan-intel intel-media-driver libva-intel-driver libva-vdpau-driver
+
+2. Graphics drivers - mesa, 
+					xf86-video-intel 
+					vulkan-intel 
+					intel-media-driver 
+					libva-intel-driver 
+					libva-vdpau-driver
+

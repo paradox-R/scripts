@@ -14,31 +14,31 @@
 
 NOTIFY_ID=3000
 
-GetDiskUsage(){
+get_disk_usage(){
 	echo " Home Usage $(df ~ | awk '{print $5}' | tail -n1)"
 }
 
-GetCpuLoad(){
+get_cpu_load(){
 	load=`awk '{print $1}' /proc/loadavg`
 	numOfCores=`grep 'processor' /proc/cpuinfo | wc -l`
 	loadAvg=`echo "scale=2;($load/$numOfCores*100)" | bc -l`
 	echo " Load Avg. $loadAvg%"
 }
 
-GetCpuTemp(){
+get_cpu_temp(){
 	echo " Chip Temp. $(sensors | awk '/^temp1/ {print $2 $3}')"
 }
 
-GetMemStats(){
+get_mem_stats(){
 	echo " Memory Usage $(free -h | awk '/^Mem/ {print $3 " / " $2}')"
 }
 
-Notify(){
-	stats="$(GetDiskUsage)\n$(GetCpuLoad)\n$(GetCpuTemp)\n$(GetMemStats)"
+notify(){
+	stats="$(get_disk_usage)\n$(get_cpu_load)\n$(get_cpu_temp)\n$(get_mem_stats)"
 	proc=$(ps axch -o cmd,%cpu --sort=-%cpu | head -n5)
 	info=$(echo -e "$stats\n------------------------------\n$proc")
 	dunstify -u normal -r $NOTIFY_ID -a "Resource Usage" "$info"
 }
 
-$(Notify)
+notify
 

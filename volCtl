@@ -11,7 +11,7 @@ NOTIFY_ID=3000
 i_MUTE=" 婢"
 i_UNMUTE=" 墳"
 
-Toggle(){
+toggle(){
 	#toggle between mute and unmute
 	#amixer -q set Master toggle
 	pamixer -t
@@ -19,7 +19,7 @@ Toggle(){
 	dunstify -u normal -r $NOTIFY_ID -a "Speakers $toggle" -t 3000 " "
 }
 
-Notify(){
+notify(){
 	vol=`pamixer --get-volume`
 	#bar=$(seq -s "─" $(($vol / 5)) | sed 's/[0-9]//g')
 	[ "$vol" -gt 100 ] && vol="$vol% !!" || vol="$vol%"
@@ -30,14 +30,14 @@ case $1 in
 	up)
 		#amixer -q set Master +5%
 		pamixer --get-mute > /dev/null && $(Toggle)
-		pamixer --allow-boost -i 10
-		$(Notify);;
+		pamixer --allow-boost -i 5
+		notify;;
 	down)
 		#amixer -q set Master -5%
 		pamixer --get-mute > /dev/null && $(Toggle)
-		pamixer --allow-boost -d 10
-		$(Notify);;
+		pamixer --allow-boost -d 5
+		notify;;
 	toggle)
-		$(Toggle);;
+		toggle;;
 esac
 

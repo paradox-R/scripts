@@ -16,42 +16,35 @@
 #
 #Dependencies - youtube-dl, dunst/notify-send
 
-DEST="$HOME/Library/YTDownloads"
 URL=$(xclip -selection primary -o)
 
-[ -e $DEST ] || mkdir -p $DEST
-cd $DEST
-
 [ -z "$URL" ] && dunstify -u "normal" -t 3000 -a " Downloader" "Nothing to do," "Bailing..." && exit 1
-# [ ! $(echo $URL | grep -E '\.(com|org|net|in)') ] && dunstify -u "critical" -t 3000 \
-# 	-a " Downloader" "Invalid Url" && exit 1
+
 [ ! $(echo $URL | grep -E '(((http|https):\/\/|www\\.)[a-zA-Z0-9.]*[:]?[a-zA-Z0-9./&%?=_-]*)') ] &&
 		dunstify -u "critical" -t 10000 -a " Downloader" "Invalid Url" && exit 1
 
 [ $(echo $URL | grep 'list') ] && 
-	OPTS="Download playlist\nDownload current video\nExtract audio from playlist\nExtract audio from current video" ||
-	OPTS="Download video\nExtract audio from video" 
+	OPTS="Download playlist\nDownload video\nExtract audio from playlist\nExtract audio" ||
+	OPTS="Download video\nExtract audio" 
 
 format=$(echo -e $OPTS | dmenu -i -l 5 -p "Select a Download Format : " | sed -E 's/[ \t]*$//g')
 case $format in
 	"Extract audio from playlist") 
 		URL=$(echo $URL | cut -d "&" -f1-2)
-		FLAGS=" -xq --no-warnings --audio-format best --audio-quality 0";;
+		FLAGS=" -x";;
 	"Download playlist") 
-		URL=$(echo $URL | cut -d "&" -f1-2)
-		FLAGS=" -q --no-warnings --format best --audio-format best --audio-quality 0";;
-	"Extract audio from video")
+		URL=$(echo $URL | cut -d "&" -f1-2);;
+	"Extract audio")
 		URL=$(echo $URL | cut -d "&" -f1)
-		FLAGS=" -xq --no-warnings --audio-format best --audio-quality 0";;
-	"Download current video") 
-		URL=$(echo $URL | cut -d "&" -f1)
-		FLAGS=" -q --no-warnings --format best --audio-format best --audio-quality 0";;
+		FLAGS=" -x";;
+	"Download video") 
+		URL=$(echo $URL | cut -d "&" -f1);;
 	*)
 		dunstify -u "normal" -t 3000 -a " Downloader" "Nothing to do," "Bailing..."
 		exit ;;
 esac
 
-TITLE=$(youtube-dl --get-TITLE $URL)
+TITLE=$(youtube-dl --get-title $URL)
 
 [ -z "$TITLE" ] && dunstify -u "critical" -t 3000 -a " Downloader" "Something's Wrong," "Bailing..." && 
 	exit 1

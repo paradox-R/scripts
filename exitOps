@@ -21,20 +21,17 @@ OPERATION=$(echo -e " Lock Screen\n Suspend\n Logout\n Reboot\n S
 
 case $OPERATION in
 	" Logout") 
-		$PROMPT " Exit Current Session?"
-		[ $? -eq 0 ] && pkill -kill -u $USER;;
+		$PROMPT " Exit Current Session?" "pkill -kill -u $USER";;
 	" Reboot") 
-		$PROMPT " Reboot System?"
-		[ $? -eq 0 ] && reboot;;
+		$PROMPT " Reboot System?" "reboot";;
 	" Shutdown")
-		$PROMPT " ShutDown Now?"
-		[ $? -eq 0 ] && shutdown now;;
+		$PROMPT " ShutDown Now?" "shutdown now";;
 	" Suspend")
 		$PROMPT " Suspend All Operations?"
-		[ $? -eq 0 ] && sleep 0.25s; slock & systemctl suspend;;
+		[ $? -eq 0 ] && sleep 0.25s && $(slock & systemctl suspend);;
 	" Lock Screen")
 		$PROMPT " Suspend All Operations?"
-		[ $? -eq 0 ] && sleep 0.25s; slock;;
+		[ $? -eq 0 ] && sleep 0.25s && slock;;
 	*)
 		exit 1;;
 esac

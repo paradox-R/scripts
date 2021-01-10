@@ -19,12 +19,12 @@ restore(){
 	[ -e "$PACPKGS" ] && sudo pacman -S --needed - < $PACPKGS
 
 	if [ -e "$AURPKGS" ]; then
-		[ "$(pacman -Qs yay)" > /dev/null ] || $(InstlHelper)
+		[ "$(pacman -Qs yay)" > /dev/null ] || $(instl_helper)
 		[ "$?" -eq 0 ] && yay -S --needed < $AURPKGS
 	fi
 }
 
-InstlHelper(){
+instl_helper(){
 	sudo pacman -Syu git base-devel
 	git clone https://aur.archlinux.org/yay.git
 	cd yay

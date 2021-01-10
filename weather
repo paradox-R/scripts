@@ -9,7 +9,7 @@
 
 NOTIFY_ID=3004
 
-GetWeather(){
+get_weather(){
 	if $(ping -qc 1 1.1 > /dev/null); then
 		#wttr.in->>l=location, c=weather condition, C=wether condition text,
 		#t=Temp, w=wind dir and speed, m=moonphase, M=moonday, p=precipitation,
@@ -26,19 +26,19 @@ GetWeather(){
 	echo $report
 }
 
-Notify(){
+notify(){
 	while true; do
-		weather=$(GetWeather)
+		weather=$(get_weather)
 		loc=`echo $weather | cut -d ":" -f1`
 		weather=`echo $weather | cut -d ":" -f2`
 		if $(echo $weather | grep "Unavailable" > /dev/null); then
 			sleep 1m
 		else
-			dunstify -u normal -r $NOTIFY_ID -t 5000 -a "Weather Report" "$loc" "$weather"
+			dunstify -u normal -r $NOTIFY_ID -t 7000 -a "Weather Report" "$loc" "$weather"
 			sleep 30m
 		fi
 	done
 }
 
-$(Notify)
+notify
 

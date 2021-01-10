@@ -9,7 +9,7 @@
 
 NOTIFY_ID=3000
 
-Notify(){
+notify(){
 	brite=`xbacklight -get`
 	brite=${brite%.*}
 	#bar=$(seq -s "─" $(($brite / 5)) | sed 's/[0-9]//g')
@@ -19,9 +19,9 @@ Notify(){
 case $1 in 
 	up)
 		xbacklight -inc 5
-		$(Notify);;
+		notify;;
 	down)
 		xbacklight -dec 5
-		$(Notify);;
+		notify;;
 esac
 

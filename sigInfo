@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+
+echo -e "PID: "$!"\nArgs Array: "$@"\nArg Count: "$#"\nPID of Parent Shell: "$$"\nArgs: "$*"\nCmd: "$0;
+
+Xvfb :1 -screen 0 1024x768x16 -noreset &
+echo -e "Xvfb PID: "$!"\nParent id of the invoking shell: "$$;
+
+DISPLAY=:1 firefox &
+echo -e "PID of child proc in Xvfb: "$!"\nParent id of the invoking shell: "$$;
+
+while true; do
+	sleep 1m;
+done
+
