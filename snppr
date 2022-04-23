@@ -1,0 +1,78 @@
+#!/usr/bin/env sh                           
+#  ___ _ __  _ __  _ __  _ __ 
+# / __| '_ \| '_ \| '_ \| '__|
+# \__ \ | | | |_) | |_) | |   
+# |___/_| |_| .__/| .__/|_|   
+#           |_|   |_|         
+# 
+# Minimal handler to manage Snapshots of a BTRFS Filesystem.
+# Author: Vāsiṣṭha
+
+err_handler(){
+	echo "$1"; exit 1;
+}
+
+create_snapshot(){
+	subvol=$1
+	name=$2
+	[ -z $subvol ] && err_handler " [!] No Sub-Volume Specified, Nothing to do..."
+
+	SNAP_DIR="$subvol/.snapshots"
+	SNAP="$SNAP_DIR/$(date +%d%B%y)"
+	[ -e $SNAP_DIR ] || mkdir -p "$SNAP_DIR"
+	[ -z $name ] || SNAP="$SNAP_DIR/$name"
+
+	echo -e " :: Creating Snapshot for '$subvol' ..."
+	btrfs subvolume snapshot "$subvol" "$SNAP" > /dev/null
+	[ $? -eq 0 ] && echo " :: Created Snapshot of $subvol in $SNAP"
+	exit 0
+}
+
+delete_snapshot(){
+	SNAP=$1
+	if [ -z $SNAP ] || [ ! -e $SNAP ]; then
+		err_handler " [!] No Such Sub-Volume/ Incorrect Sub-Volume Specified..."
+	fi
+
+	echo " [!] This will delete the said snapshot."
+	read -p " [!] Continue? [Y/N]" yesno
+	case $yesno in
+		[Yy]* )
+			echo " :: Deleting $SNAP..."
+			btrfs subvolume delete $SNAP > /dev/null
+			[ $? -eq 0 ] && echo " :: Subvolume '$SNAP' Deleted." || 
+				err_handler " [!] Deletion failed."
+			exit 0;;
+		[Nn]* ) echo " [!] Nothing to do..."; exit 0;;
+		*) err_handler " [!] Unknown Option, bailing...";;
+	esac
+}
+
+
+show_snapshot(){
+	SNAP=$1
+
+	if [ ! -z $SNAP ]; then
+		[ ! -e $SNAP ] && err_handler " [!] Unable to Locate snapshot..."
+
+		echo " :: Showing, $(btrfs subvolume show $SNAP)"
+	fi
+}
+
+usage_info(){
+	echo -e " :: $0 Usage: [w.r.t Btrfs]\n"\
+		"\tOPTIONS: \n"\
+		"\t\tcreate sub_volume [snapshot_name] -> Create snapshot.\n"\
+		"\t\tdel snapshot_name -> Delete snapshot.\n"\
+		"\t\tshow snapshot_name -> Show SubVolume Info."
+	exit 1;
+}
+
+[ $UID -ne 0 ] && err_handler " [!] Script to be run as root..."
+case $1 in 
+	create)	create_snapshot $2 $3;;
+	del)	delete_snapshot $2;;
+	show)	show_snapshot $2;;
+	*)		usage_info;;
+esac
+

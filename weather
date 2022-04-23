@@ -5,7 +5,10 @@
 #  \ V  V /  __/ (_| | |_| | | |  __/ |  |  _ <  __/ |_) | (_) | |  | |_ 
 #   \_/\_/ \___|\__,_|\__|_| |_|\___|_|  |_| \_\___| .__/ \___/|_|   \__|
 #
-#Dependencies - curl, dunst                   
+# Minimal Weather daemon.
+#
+# Author: Vāsiṣṭha 
+# Dependencies: curl, dunst                   
 
 NOTIFY_ID=3004
 
@@ -17,7 +20,7 @@ get_weather(){
 		#curl -s wttr.in/$location\?format="%l:+%c+%C,+%t,+%w,+%m+%M"
 		#curl -s wttr.in\?format="%l:+%c+%C,+%t,+%w,+%m+%M"
 		location="Bengaluru,India"
-		report=$(curl -s wttr.in/$location\?format="%l:+%c+%C,+%t,+%w,+%m+%M")
+		report=$(curl -s https://wttr.in/$location\?format="%l:+%c+%C,+%t,+%w,+%m+%M")
 		[ -z "$report" ] || $(echo "$report" | grep -iE 'html|Unknown|Sorry|bad' > /dev/null) && 
 			report="Weather Report Unavailable"
 	else

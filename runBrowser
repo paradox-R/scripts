@@ -1,15 +1,15 @@
 #!/usr/bin/env sh
-# ____
-#| __ ) _ __ _____      _____  ___ _ __
-#|  _ \| '__/ _ \ \ /\ / / __|/ _ \ '__|
-#| |_) | | | (_) \ V  V /\__ \  __/ |
-#|____/|_|  \___/ \_/\_/ |___/\___|_|
+#  ____
+# | __ ) _ __ _____      _____  ___ _ __
+# |  _ \| '__/ _ \ \ /\ / / __|/ _ \ '__|
+# | |_) | | | (_) \ V  V /\__ \  __/ |
+# |____/|_|  \___/ \_/\_/ |___/\___|_|
 #
-#Surfs the internet for a given text/ Query using the default search engine or
-#directly opens a provided URL.
-#To directly add Bookmarks, Just add the URLs below.
+# Surfs the internet for a given text/ Query using the default search engine or
+# directly opens a provided URL.
+# To directly add Bookmarks, Just add the URLs below.
 #
-#Dependencies -> dmenu.
+# Dependencies: dmenu.
 
 FLAGS="--new-window"
 DEFURL="https://duckduckgo.com/?q="
@@ -17,6 +17,7 @@ DEFURL="https://duckduckgo.com/?q="
 URL=$(echo -e "                                        "\
 	"\n Archives"\
 	"\nDevDocs"\
+	"\nAlgorithms"\
 	"\n GitHub"\
 	"\n Google"\
 	"\n Reddit"\
@@ -28,6 +29,7 @@ URL=$(echo -e "                                        "\
 case $URL in
 	" Archives")	URL='https://archive.org';;
 	"DevDocs")		URL='https://devdocs.io';;
+	"Algorithms")	URL="https://the-algorithms.com";;
 	" GitHub") 	URL='https://github.com';;
 	" Google") 	URL='https://google.com';;
 	"PrivacyTools")	URL="https://privacytools.io";;

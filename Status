@@ -1,23 +1,24 @@
 #!/usr/bin/env sh
-# ______        ____  __   ____  _        _
-#|  _ \ \      / /  \/  | / ___|| |_ __ _| |_ _   _ ___
-#| | | \ \ /\ / /| |\/| | \___ \| __/ _` | __| | | / __|
-#| |_| |\ V  V / | |  | |  ___) | || (_| | |_| |_| \__ \
-#|____/  \_/\_/  |_|  |_| |____/ \__\__,_|\__|\__,_|___/
+#  ______        ____  __   ____  _        _
+# |  _ \ \      / /  \/  | / ___|| |_ __ _| |_ _   _ ___
+# | | | \ \ /\ / /| |\/| | \___ \| __/ _` | __| | | / __|
+# | |_| |\ V  V / | |  | |  ___) | || (_| | |_| |_| \__ \
+# |____/  \_/\_/  |_|  |_| |____/ \__\__,_|\__|\__,_|___/
 #
-#Simple Program to set the Status for the DWM Bar.
-#The Semi-colon separates the status into topbar and bottom bar texts.
+# Simple Program to set the Status for the DWM Bar.
+# The Semi-colon separates the status into topbar and bottom bar texts.
 #
-#Dependencies -> nmcli 
+# Author: Vāsiṣṭha
+# Dependencies: nmcli, xbacklight[Xorg], pulseaudio, nerd-fonts
 
-#Get the connectivity params
+# Get the connectivity params
 get_conn_params(){
 	interface=`ip route |grep -oPm1 '(?<=dev )[^ ]+'`
 	rx=`cat /sys/class/net/$interface/statistics/rx_bytes`
 	tx=`cat /sys/class/net/$interface/statistics/tx_bytes`
 }
 
-#Calculate Connection Speeds
+# Calculate Connection Speeds
 calc_speeds(){
 	vel=$(($1 - $2))
 	#vel=${vel#-}
@@ -33,7 +34,7 @@ calc_speeds(){
 	echo "$vel"
 }
 
-#Connection Details
+# Connection Details
 get_net_traffic(){
 	if [ ! -z "$(ip route)" ]; then
 		get_conn_params
@@ -56,17 +57,17 @@ get_net_traffic(){
 	echo "$traff"
 }
 
-#Get Brightness
+# Brightness
 get_bcklt(){
 	bcklt=`xbacklight -get`
 	bcklt=${bcklit%.*}
 	[ "$bcklt" -le 50 ] && echo "🔅" || echo "🔆"
 }
 
-#Volume Params
+# Volume 
 get_vol(){
 	vol=`pamixer --get-volume-human`
-	$( echo "$vol" | grep "%" > /dev/null ) && vol=$(echo "$vol" | tr -d "%")
+	$(echo "$vol" | grep "%" > /dev/null) && vol=$(echo "$vol" | tr -d "%")
 	if [ "$vol" -gt 0 ] && [ "$vol" -le 33 ]; then
 		vol="奄"
 	elif [ "$vol" -gt 33 ] && [ "$vol" -le 66 ]; then
@@ -79,13 +80,12 @@ get_vol(){
 	echo "$vol"
 }
 
-#Local current time
+# Local current time
 get_lcl_time(){
-	# echo " $(date "+%B %d  %T %Z")"
 	echo " $(date "+%B %d  %T ")"
 }
 
-#Battery Stats
+# Battery Stats
 get_bat_stats(){
 	batStatus=`cat /sys/class/power_supply/BAT0/status`
 	if [ "$batStatus" = "Full" ]; then
@@ -115,7 +115,7 @@ get_bat_stats(){
 	echo "$icon$bat%"
 }
 
-#Set Initial Values
+# Set Initial Values
 prevRx=$XDG_CACHE_HOME"/prevRx"
 prevTx=$XDG_CACHE_HOME"/prevTx"
 echo $rx > "$prevRx"

@@ -1,0 +1,38 @@
+#!/usr/bin/env sh
+
+# Author: Vāsiṣṭha
+
+err_handlr(){
+	echo "$1"; exit 1;
+}
+
+notify(){
+	# XDG_RUNTIME_DIR="/run/user/1000"
+	dunstify -u normal -t 3000 -a "$1" " " 
+}
+
+usage_info(){
+	echo -e " :: $0 \n\tUsage:\n"\
+		"\t\tset\t->Set CPU mode [powersave, performance]\n"\
+		"\t\tget\t->Get current CPU mode"
+}
+
+get_cpu_mode(){
+	cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+}
+
+set_cpu_mode(){
+	[ get_cpu_mode == "$1" ] && notify "Already in '$1' mode."
+	[ $1 == "performance" -o $1 == "powersave" ] || usage_info
+	echo $1 | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+	notify "Switched to $1 mode"
+}
+
+[ $UID -ne 0 ] && err_handlr " [!] Script to be run as 'root'"
+
+case $1 in
+	set) set_cpu_mode $2; exit 0;;
+	get) get_cpu_mode; exit 0;;
+	*) usage_info; exit 1;;
+esac
+

@@ -1,13 +1,13 @@
 #!/usr/bin/env sh
-# ____       _ __        __    _ _ 
-#/ ___|  ___| |\ \      / /_ _| | |
-#\___ \ / _ \ __\ \ /\ / / _` | | |
-# ___) |  __/ |_ \ V  V / (_| | | |
-#|____/ \___|\__| \_/\_/ \__,_|_|_|
+#  ____       _ __        __    _ _ 
+# / ___|  ___| |\ \      / /_ _| | |
+# \___ \ / _ \ __\ \ /\ / / _` | | |
+#  ___) |  __/ |_ \ V  V / (_| | | |
+# |____/ \___|\__| \_/\_/ \__,_|_|_|
 #
-#Sets any given image as wallpaper/ Desktop Background
+# Sets any given image as wallpaper/ Desktop Background
 #
-#Dependencies - feh, dunst
+# Dependencies: feh, dunst
 
 DEST="$HOME/Library/Pictures"
 FLAGS=" --no-fehbg --bg-scale"

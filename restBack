@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-BACKUPDIR="$HOME/.config/pkgs"
+BACKUPDIR="$XDG_DATA_HOME/pkgs"
 PACPKGS="$BACKUPDIR/pacPkgs.bak"
 AURPKGS="$BACKUPDIR/aurPkgs.bak"
 
@@ -33,8 +33,7 @@ instl_helper(){
 }
 
 case $1 in
-	backup|restore)
-		$($1);;
+	backup|restore) $($1);;
 	*)
 		echo -e "Unknown Option...\nBailing..."
 		exit 1;;
